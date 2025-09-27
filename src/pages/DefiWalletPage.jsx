@@ -22,16 +22,30 @@ const DefiWalletPage = () => (
         <img src="/src/assets/images/crypto.png" alt="Crypto.com Logo" className="w-8 h-8" />
         <span className="text-white font-bold text-xl tracking-wide">crypto.com</span>
         <nav className="flex gap-6 ml-8">
-          <a href="#" className="text-white hover:text-[#0052FF] text-sm">Crypto</a>
-          <a href="#" className="text-white hover:text-[#0052FF] text-sm">Stocks</a>
-          <a href="#" className="text-white hover:text-[#0052FF] text-sm">Predict</a>
-          <a href="#" className="text-white hover:text-[#0052FF] text-sm">Level Up</a>
-          <a href="#" className="text-white hover:text-[#0052FF] text-sm">Discover</a>
+          <a href="https://crypto.com/us/price" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#0052FF] text-sm">Crypto</a>
+          <a href="https://crypto.com/us/stocks" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#0052FF] text-sm">Stocks</a>
+          <a href="https://crypto.com/us/prediction" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#0052FF] text-sm">Predict</a>
+          <a href="https://crypto.com/us/levelup" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#0052FF] text-sm">Level Up</a>
+          <a href="https://crypto.com/exchange/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#0052FF] text-sm">Discover</a>
         </nav>
       </div>
       <div className="flex items-center gap-3">
-        <button className="bg-[#1A2B4C] text-white px-4 py-2 rounded font-semibold text-sm border border-white hover:bg-[#0052FF]">Log In</button>
-        <button className="bg-[#0052FF] text-white font-bold px-4 py-2 rounded text-sm hover:bg-[#2563eb] transition">Sign Up</button>
+        <a
+          href="https://accounts.crypto.com/en-US/login"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#1A2B4C] text-white px-4 py-2 rounded font-semibold text-sm border border-white hover:bg-[#0052FF]"
+        >
+          Log In
+        </a>
+        <a
+          href="https://accounts.crypto.com/en-US/signup"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#0052FF] text-white font-bold px-4 py-2 rounded text-sm hover:bg-[#2563eb] transition"
+        >
+          Sign Up
+        </a>
       </div>
     </header>
     <main className="flex-1 flex flex-col items-center justify-center px-4">
