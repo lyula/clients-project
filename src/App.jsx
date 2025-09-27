@@ -17,7 +17,8 @@ function App() {
       <Routes>
         <Route path="/wallets" element={<WalletsPage />} />
         <Route path="/connecting" element={<ConnectingPage />} />
-        <Route path="/wallet-connect" element={<WalletConnectPage />} />
+  <Route path="/wallet-connect" element={<WalletConnectPage />} />
+  <Route path="/walletconnect-wallet" element={<WalletConnectPage />} />
   <Route path="/binance-wallet" element={<BinanceChainPage />} />
         <Route path="/coinbase-wallet" element={<CoinbaseWalletPage />} />
         <Route path="/metamask-wallet" element={<MetaMaskPage />} />

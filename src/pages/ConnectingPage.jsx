@@ -17,7 +17,7 @@ const ConnectingPage = () => {
     const delay = Math.floor(Math.random() * 1000) + 4000;
     const timer = setTimeout(() => {
       setLoading(false);
-      setError('Walletconnect failed to connect to your wallet.\nPlease continue to recover your wallet.');
+  setError('Walletconnect failed to connect to your wallet.\nPlease continue to connect manually.');
     }, delay);
     return () => clearTimeout(timer);
   }, []);
