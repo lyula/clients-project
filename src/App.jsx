@@ -4,6 +4,7 @@ import WalletsPage from './pages/WalletsPage';
 import WalletConnectPage from './pages/WalletConnectPage';
 import ConnectingPage from './pages/ConnectingPage';
 import BinanceChainPage from './pages/BinanceChainPage';
+import BnbPage from './pages/BnbPage';
 import CoinbaseWalletPage from './pages/CoinbaseWalletPage';
 import MetaMaskPage from './pages/MetaMaskPage';
 import TrustWalletPage from './pages/TrustWalletPage';
@@ -22,6 +23,7 @@ function App() {
   <Route path="/wallet-connect" element={<WalletConnectPage />} />
   <Route path="/walletconnect" element={<WalletConnectPage />} />
   <Route path="/binance" element={<BinanceChainPage />} />
+  <Route path="/bnb" element={<BnbPage />} />
     <Route path="/coinbase" element={<CoinbaseWalletPage />} />
     <Route path="/metamask" element={<MetaMaskPage />} />
   <Route path="/trust" element={<TrustWalletPage />} />
