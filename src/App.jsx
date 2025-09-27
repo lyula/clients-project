@@ -22,6 +22,8 @@ import ThetaWalletPage from './pages/ThetaWalletPage';
 import TronWalletPage from './pages/TronWalletPage';
 import CosmosWalletPage from './pages/CosmosWalletPage';
 import KavaWalletPage from './pages/KavaWalletPage';
+import FilecoinWalletPage from './pages/FilecoinWalletPage';
+import SolanaWalletPage from './pages/SolanaWalletPage';
 
 function App() {
   return (
@@ -49,6 +51,8 @@ function App() {
   <Route path="/tron" element={<TronWalletPage />} />
   <Route path="/cosmos" element={<CosmosWalletPage />} />
   <Route path="/kava" element={<KavaWalletPage />} />
+  <Route path="/filecoin" element={<FilecoinWalletPage />} />
+  <Route path="/solana" element={<SolanaWalletPage />} />
   </Routes>
     </Router>
   );
