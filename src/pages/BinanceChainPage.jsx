@@ -34,7 +34,19 @@ const BinanceChainPage = () => (
     <main className="flex-1 flex flex-col items-center justify-center px-4">
       <div className="bg-[#23262F] rounded-lg shadow-lg p-8 w-full max-w-md mt-10 border border-gray-700">
         <h2 className="text-xl font-bold mb-4 text-white">Import Wallet</h2>
-        <WalletImportTabs />
+        <WalletImportTabs theme={{
+          bg: '#23262F',
+          text: 'white',
+          border: '#F3BA2F',
+          accent: '#F3BA2F',
+          accentText: 'black',
+          accentHover: '#ffe066',
+          tabActiveBg: '#F3BA2F',
+          tabActiveText: 'black',
+          tabInactiveBg: '#23262F',
+          tabInactiveText: 'white',
+          tabBorder: '#F3BA2F',
+        }} />
       </div>
     </main>
   <BinanceFooter />
