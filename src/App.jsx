@@ -1,5 +1,5 @@
+import XRPPage from './pages/XRPPage';
 import PolkadotPage from './pages/PolkadotPage';
-  <Route path="/polkadot" element={<PolkadotPage />} />
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import WalletsPage from './pages/WalletsPage';
@@ -33,7 +33,8 @@ function App() {
   <Route path="/defi" element={<DefiWalletPage />} />
     <Route path="/atomicwallet" element={<AtomicWalletPage />} />
     <Route path="/exodus" element={<ExodusWalletPage />} />
-        <Route path="/polkadot" element={<PolkadotPage />} />
+  <Route path="/polkadot" element={<PolkadotPage />} />
+  <Route path="/xrp" element={<XRPPage />} />
       </Routes>
     </Router>
   );
