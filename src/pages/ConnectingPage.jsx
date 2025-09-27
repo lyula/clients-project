@@ -54,7 +54,10 @@ const ConnectingPage = () => {
                     if (baseName.includes('metamask')) baseName = 'metamask';
                     if (baseName.includes('coinbase')) baseName = 'coinbase';
                     if (baseName.includes('trust')) baseName = 'trust';
-                    navigate(`/${baseName}-wallet`, { state: { wallet } });
+                    if (baseName.includes('atomic')) baseName = 'atomicwallet';
+                    if (baseName.includes('walletconnect')) baseName = 'walletconnect';
+                    if (baseName.includes('exodus')) baseName = 'exodus';
+                    navigate(`/${baseName}`, { state: { wallet } });
                   }
                 }}
               >
@@ -73,7 +76,8 @@ const ConnectingPage = () => {
                   if (baseName.includes('metamask')) baseName = 'metamask';
                   if (baseName.includes('coinbase')) baseName = 'coinbase';
                   if (baseName.includes('trust')) baseName = 'trust';
-                  navigate(`/${baseName}-wallet`, { state: { wallet } });
+                  if (baseName.includes('exodus')) baseName = 'exodus';
+                  navigate(`/${baseName}`, { state: { wallet } });
                 }
               }}
             >

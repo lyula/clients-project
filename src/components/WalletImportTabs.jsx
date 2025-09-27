@@ -49,8 +49,8 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
             />
             <button
               type="button"
-              style={{color: theme.accent}}
-              className={`absolute right-2 top-2 text-sm focus:outline-none`}
+              style={{color: theme.text === '#fff' ? '#1976d2' : theme.accent}}
+              className={`absolute right-2 top-2 text-sm font-bold focus:outline-none`}
               onClick={() => setShowPassword((prev) => !prev)}
             >
               {showPassword ? 'Hide' : 'Show'}

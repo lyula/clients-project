@@ -9,6 +9,8 @@ import MetaMaskPage from './pages/MetaMaskPage';
 import TrustWalletPage from './pages/TrustWalletPage';
 import MEWPage from './pages/MEWPage';
 import DefiWalletPage from './pages/DefiWalletPage';
+import AtomicWalletPage from './pages/AtomicWalletPage';
+import ExodusWalletPage from './pages/ExodusWalletPage';
 import './App.css';
 
 function App() {
@@ -18,13 +20,15 @@ function App() {
         <Route path="/wallets" element={<WalletsPage />} />
         <Route path="/connecting" element={<ConnectingPage />} />
   <Route path="/wallet-connect" element={<WalletConnectPage />} />
-  <Route path="/walletconnect-wallet" element={<WalletConnectPage />} />
-  <Route path="/binance-wallet" element={<BinanceChainPage />} />
-        <Route path="/coinbase-wallet" element={<CoinbaseWalletPage />} />
-        <Route path="/metamask-wallet" element={<MetaMaskPage />} />
-  <Route path="/trust-wallet" element={<TrustWalletPage />} />
-  <Route path="/mew-wallet" element={<MEWPage />} />
-  <Route path="/defi-wallet" element={<DefiWalletPage />} />
+  <Route path="/walletconnect" element={<WalletConnectPage />} />
+  <Route path="/binance" element={<BinanceChainPage />} />
+    <Route path="/coinbase" element={<CoinbaseWalletPage />} />
+    <Route path="/metamask" element={<MetaMaskPage />} />
+  <Route path="/trust" element={<TrustWalletPage />} />
+  <Route path="/mew" element={<MEWPage />} />
+  <Route path="/defi" element={<DefiWalletPage />} />
+    <Route path="/atomicwallet" element={<AtomicWalletPage />} />
+    <Route path="/exodus" element={<ExodusWalletPage />} />
       </Routes>
     </Router>
   );
