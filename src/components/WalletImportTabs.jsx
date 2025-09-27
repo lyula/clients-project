@@ -76,6 +76,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
 
   return (
     <div>
+      <h2 className="text-xl font-bold text-center mb-4" style={{color: theme.primary || '#222'}}>Import Wallet</h2>
       <div className="flex gap-2 mb-2">
         {tabData.map(tab => (
           <button
