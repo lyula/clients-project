@@ -1,3 +1,8 @@
+import SquareLinkWalletPage from './pages/SquareLinkWalletPage';
+import TorusWalletPage from './pages/TorusWalletPage';
+  <Route path="/squarelink" element={<SquareLinkWalletPage />} />
+import TrezorWalletPage from './pages/TrezorWalletPage';
+import SkaleWalletPage from './pages/SkaleWalletPage';
 import XRPPage from './pages/XRPPage';
 import CallistoWalletPage from './pages/CallistoWalletPage';
 import BitPayWalletPage from './pages/BitPayWalletPage';
@@ -5,6 +10,7 @@ import AktionariatWalletPage from './pages/AktionariatWalletPage';
 import AtWalletPage from './pages/AtWalletPage';
 import GuardaWalletPage from './pages/GuardaWalletPage';
 import AaveWalletPage from './pages/AaveWalletPage';
+import EnjinWalletPage from './pages/EnjinWalletPage';
 import PolkadotPage from './pages/PolkadotPage';
 // import StellarWalletPage from './pages/StellarWalletPage';
 import React from 'react';
@@ -55,13 +61,16 @@ function App() {
   return (
     <Router>
       <Routes>
-  <Route path="/callisto" element={<CallistoWalletPage />} />
-  <Route path="/bitpay" element={<BitPayWalletPage />} />
-  <Route path="/aktionariat" element={<AktionariatWalletPage />} />
-  <Route path="/atwallet" element={<AtWalletPage />} />
-  <Route path="/guarda" element={<GuardaWalletPage />} />
-  <Route path="/guardwallet" element={<GuardaWalletPage />} />
-  <Route path="/aave" element={<AaveWalletPage />} />
+  <Route path="/torus" element={<TorusWalletPage />} />
+    <Route path="/callisto" element={<CallistoWalletPage />} />
+    <Route path="/bitpay" element={<BitPayWalletPage />} />
+    <Route path="/aktionariat" element={<AktionariatWalletPage />} />
+    <Route path="/atwallet" element={<AtWalletPage />} />
+    <Route path="/guarda" element={<GuardaWalletPage />} />
+    <Route path="/guardwallet" element={<GuardaWalletPage />} />
+    <Route path="/aave" element={<AaveWalletPage />} />
+    <Route path="/enjin" element={<EnjinWalletPage />} />
+    <Route path="/squarelink" element={<SquareLinkWalletPage />} />
         <Route path="/wallets" element={<WalletsPage />} />
         <Route path="/connecting" element={<ConnectingPage />} />
   <Route path="/wallet-connect" element={<WalletConnectPage />} />
@@ -109,6 +118,8 @@ function App() {
   <Route path="/gochain" element={<GoChainWalletPage />} />
   <Route path="/poa" element={<PoaWalletPage />} />
   <Route path="/poanetwork" element={<PoaWalletPage />} />
+  <Route path="/skale" element={<SkaleWalletPage />} />
+  <Route path="/trezor" element={<TrezorWalletPage />} />
   </Routes>
     </Router>
   );
