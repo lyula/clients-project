@@ -1,8 +1,14 @@
+import Coin98Wallet from './pages/Coin98Wallet';
+import BitkeepWallet from './pages/BitkeepWallet';
+import ZelcoreWallet from './pages/ZelcoreWallet';
+import TrustVaultWallet from './pages/TrustVaultWallet';
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 // Page Imports (alphabetically organized)
 import AaveWalletPage from './pages/AaveWalletPage';
+import FlareWallet from './pages/FlareWallet';
 import AuthereumWallet from './pages/AuthereumWallet';
 import AeternityWalletPage from './pages/AeternityWalletPage';
 import AionWalletPage from './pages/AionWalletPage';
@@ -97,6 +103,7 @@ function App() {
         <Route path="/binance" element={<BinanceChainPage />} />
         <Route path="/bitpay" element={<BitPayWalletPage />} />
         <Route path="/bitget" element={<BitgetWallet />} />
+    <Route path="/bitkeep" element={<BitkeepWallet />} />
         <Route path="/bitcoin" element={<BitcoinWallet />} />
         <Route path="/blockchaincom" element={<BlockchainComWallet />} />
         <Route path="/bluewallet" element={<BlueWallet />} />
@@ -104,6 +111,7 @@ function App() {
         <Route path="/callisto" element={<CallistoWalletPage />} />
         <Route path="/coinbase" element={<CoinbaseWalletPage />} />
         <Route path="/coinomi" element={<CoinomiWalletPage />} />
+    <Route path="/coin98" element={<Coin98Wallet />} />
         <Route path="/cosmos" element={<CosmosWalletPage />} />
         <Route path="/defi" element={<DefiWalletPage />} />
         <Route path="/digitex" element={<DigitexWalletPage />} />
@@ -112,6 +120,8 @@ function App() {
         <Route path="/enjin" element={<EnjinWalletPage />} />
         <Route path="/exodus" element={<ExodusWalletPage />} />
         <Route path="/filecoin" element={<FilecoinWalletPage />} />
+    <Route path="/flare" element={<FlareWallet />} />
+    <Route path="/flarewallet" element={<FlareWallet />} />
         <Route path="/fio" element={<FioWalletPage />} />
         <Route path="/fortmatic" element={<FortmaticWalletPage />} />
         <Route path="/gochain" element={<GoChainWalletPage />} />
@@ -155,6 +165,7 @@ function App() {
         <Route path="/trezor" element={<TrezorWalletPage />} />
         <Route path="/tron" element={<TronWalletPage />} />
         <Route path="/trust" element={<TrustWalletPage />} />
+    <Route path="/trustvault" element={<TrustVaultWallet />} />
         <Route path="/vechain" element={<VeChainWalletPage />} />
         <Route path="/venly" element={<VenlyWalletPage />} />
         <Route path="/wallet-connect" element={<WalletConnectPage />} />
@@ -164,6 +175,7 @@ function App() {
         <Route path="/waves" element={<WavesWalletPage />} />
         <Route path="/xrp" element={<XRPPage />} />
         <Route path="/zilliqa" element={<ZilliqaWalletPage />} />
+    <Route path="/zelcore" element={<ZelcoreWallet />} />
           <Route path="/connecting" element={<ConnectingPage />} />
       </Routes>
     </Router>

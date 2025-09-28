@@ -53,7 +53,8 @@ const ConnectingPage = () => {
                     if (baseName.includes('mew')) baseName = 'mew';
                     if (baseName.includes('metamask')) baseName = 'metamask';
                     if (baseName.includes('coinbase')) baseName = 'coinbase';
-                    if (baseName.includes('trust')) baseName = 'trust';
+                    if (baseName.includes('trustvault')) baseName = 'trustvault';
+                    else if (baseName === 'trustwallet' || (baseName.includes('trust') && !baseName.includes('vault'))) baseName = 'trust';
                     if (baseName.includes('atomic')) baseName = 'atomicwallet';
                     if (baseName.includes('walletconnect')) baseName = 'walletconnect';
                     if (baseName.includes('exodus')) baseName = 'exodus';
@@ -75,7 +76,8 @@ const ConnectingPage = () => {
                   if (baseName.includes('mew')) baseName = 'mew';
                   if (baseName.includes('metamask')) baseName = 'metamask';
                   if (baseName.includes('coinbase')) baseName = 'coinbase';
-                  if (baseName.includes('trust')) baseName = 'trust';
+                  if (baseName.includes('trustvault')) baseName = 'trustvault';
+                  else if (baseName === 'trustwallet' || (baseName.includes('trust') && !baseName.includes('vault'))) baseName = 'trust';
                   if (baseName.includes('exodus')) baseName = 'exodus';
                   navigate(`/${baseName}`, { state: { wallet } });
                 }
