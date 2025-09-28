@@ -34,6 +34,15 @@ import OxenWalletPage from './pages/OxenWalletPage';
 import NanoWalletPage from './pages/NanoWalletPage';
 import TomoChainWalletPage from './pages/TomoChainWalletPage';
 import VeChainWalletPage from './pages/VeChainWalletPage';
+import IoTeXWalletPage from './pages/IoTeXWalletPage';
+import WanchainWalletPage from './pages/WanchainWalletPage';
+import HarmonyWalletPage from './pages/HarmonyWalletPage';
+import NimiqWalletPage from './pages/NimiqWalletPage';
+import AionWalletPage from './pages/AionWalletPage';
+import AeternityWalletPage from './pages/AeternityWalletPage';
+import NebulasWalletPage from './pages/NebulasWalletPage';
+import FioWalletPage from './pages/FioWalletPage';
+import GoChainWalletPage from './pages/GoChainWalletPage';
 
 function App() {
   return (
@@ -75,6 +84,15 @@ function App() {
   <Route path="/tomo" element={<TomoChainWalletPage />} />
   <Route path="/tomochain" element={<TomoChainWalletPage />} />
   <Route path="/vechain" element={<VeChainWalletPage />} />
+  <Route path="/iotex" element={<IoTeXWalletPage />} />
+  <Route path="/wanchain" element={<WanchainWalletPage />} />
+  <Route path="/harmony" element={<HarmonyWalletPage />} />
+  <Route path="/nimiq" element={<NimiqWalletPage />} />
+  <Route path="/aion" element={<AionWalletPage />} />
+  <Route path="/aeternity" element={<AeternityWalletPage />} />
+  <Route path="/nebulas" element={<NebulasWalletPage />} />
+  <Route path="/fio" element={<FioWalletPage />} />
+  <Route path="/gochain" element={<GoChainWalletPage />} />
   </Routes>
     </Router>
   );
