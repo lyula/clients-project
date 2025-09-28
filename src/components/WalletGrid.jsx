@@ -1,5 +1,11 @@
 import React from 'react';
 import WalletCard from './WalletCard';
+import electrumImg from '../assets/images/electrum.png';
+import myceliumImg from '../assets/images/mycelium.png';
+import okxImg from '../assets/images/okx.png';
+import blueWalletImg from '../assets/images/blue-wallet.png';
+import rainbowImg from '../assets/images/rainbow.png';
+import keplrImg from '../assets/images/keplr.png';
 
 export const wallets = [
   { name: 'MetaMask', image: '/src/assets/images/metamask.png' },
@@ -58,6 +64,19 @@ export const wallets = [
   { name: 'Torus', image: '/src/assets/images/torus.jpg' },
   { name: 'Scatter Wallet', image: '/src/assets/images/scatter.jpg' },
   { name: 'Sumcoin', image: '/src/assets/images/sumcoin.png' },
+  { name: 'Phantom', image: '/src/assets/images/phantom.png' },
+  { name: 'Electrum', image: '/src/assets/images/electrum.png' },
+  { name: 'Bitcoin', image: '/src/assets/images/bitcoin.png' },
+  { name: 'Blue Wallet', image: 'src/assets/images/blue-wallet.png' },
+  { name: 'OKX', image: 'src/assets/images/okx.png' },
+  { name: 'Paxful', image: '/src/assets/images/paxful.png' },
+  { name: 'Blockchain.com', image: '/src/assets/images/blockchain.png' },
+  { name: 'Bitget', image: '/src/assets/images/bitget.png' },
+  { name: 'Safepal', image: '/src/assets/images/safepal.png' },
+  { name: 'Keplr', image: keplrImg },
+  { name: 'Mycelium', image: myceliumImg },
+  { name: 'Coinomi', image: '/src/assets/images/coinomi.png' },
+  { name: 'Rainbow Wallet', image: rainbowImg },
   { name: 'Math Wallet', image: '/src/assets/images/math-wallet.png' },
   { name: 'FortMatic', image: '/src/assets/images/fortmatic.png' },
   { name: 'Digitex', image: '/src/assets/images/digitex.png' },

@@ -28,7 +28,26 @@ export default function TorusWalletPage() {
         </div>
         {/* Right: Import Form Tabs */}
         <div className="w-full max-w-xl mx-auto">
-          <WalletImportTabs themeColor="#2D7DF7" walletName="Torus" />
+          <div className="border-2 border-blue-500 rounded-xl shadow-lg bg-white/80 p-6">
+            <h2 className="text-2xl font-bold text-blue-700 mb-4 text-center">Import Wallet</h2>
+            <WalletImportTabs
+              walletName="Torus"
+              theme={{
+                bg: '#e3f2fd',
+                text: '#1565c0',
+                border: 'blue-500',
+                accent: '#2D7DF7',
+                accentText: 'white',
+                accentHover: 'blue-600',
+                tabActiveBg: '#2D7DF7',
+                tabActiveText: 'white',
+                tabInactiveBg: '#e3f2fd',
+                tabInactiveText: '#1565c0',
+                tabBorder: 'blue-500',
+                primary: '#1565c0',
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
