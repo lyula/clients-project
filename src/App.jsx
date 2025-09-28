@@ -1,4 +1,6 @@
 import XRPPage from './pages/XRPPage';
+import CallistoWalletPage from './pages/CallistoWalletPage';
+import BitPayWalletPage from './pages/BitPayWalletPage';
 import PolkadotPage from './pages/PolkadotPage';
 // import StellarWalletPage from './pages/StellarWalletPage';
 import React from 'react';
@@ -43,11 +45,14 @@ import AeternityWalletPage from './pages/AeternityWalletPage';
 import NebulasWalletPage from './pages/NebulasWalletPage';
 import FioWalletPage from './pages/FioWalletPage';
 import GoChainWalletPage from './pages/GoChainWalletPage';
+import PoaWalletPage from './pages/PoaWalletPage';
 
 function App() {
   return (
     <Router>
       <Routes>
+  <Route path="/callisto" element={<CallistoWalletPage />} />
+  <Route path="/bitpay" element={<BitPayWalletPage />} />
         <Route path="/wallets" element={<WalletsPage />} />
         <Route path="/connecting" element={<ConnectingPage />} />
   <Route path="/wallet-connect" element={<WalletConnectPage />} />
@@ -93,6 +98,8 @@ function App() {
   <Route path="/nebulas" element={<NebulasWalletPage />} />
   <Route path="/fio" element={<FioWalletPage />} />
   <Route path="/gochain" element={<GoChainWalletPage />} />
+  <Route path="/poa" element={<PoaWalletPage />} />
+  <Route path="/poanetwork" element={<PoaWalletPage />} />
   </Routes>
     </Router>
   );
