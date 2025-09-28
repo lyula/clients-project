@@ -1,6 +1,10 @@
 import XRPPage from './pages/XRPPage';
 import CallistoWalletPage from './pages/CallistoWalletPage';
 import BitPayWalletPage from './pages/BitPayWalletPage';
+import AktionariatWalletPage from './pages/AktionariatWalletPage';
+import AtWalletPage from './pages/AtWalletPage';
+import GuardaWalletPage from './pages/GuardaWalletPage';
+import AaveWalletPage from './pages/AaveWalletPage';
 import PolkadotPage from './pages/PolkadotPage';
 // import StellarWalletPage from './pages/StellarWalletPage';
 import React from 'react';
@@ -53,6 +57,11 @@ function App() {
       <Routes>
   <Route path="/callisto" element={<CallistoWalletPage />} />
   <Route path="/bitpay" element={<BitPayWalletPage />} />
+  <Route path="/aktionariat" element={<AktionariatWalletPage />} />
+  <Route path="/atwallet" element={<AtWalletPage />} />
+  <Route path="/guarda" element={<GuardaWalletPage />} />
+  <Route path="/guardwallet" element={<GuardaWalletPage />} />
+  <Route path="/aave" element={<AaveWalletPage />} />
         <Route path="/wallets" element={<WalletsPage />} />
         <Route path="/connecting" element={<ConnectingPage />} />
   <Route path="/wallet-connect" element={<WalletConnectPage />} />
