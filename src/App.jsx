@@ -24,6 +24,16 @@ import CosmosWalletPage from './pages/CosmosWalletPage';
 import KavaWalletPage from './pages/KavaWalletPage';
 import FilecoinWalletPage from './pages/FilecoinWalletPage';
 import SolanaWalletPage from './pages/SolanaWalletPage';
+import VenlyWalletPage from './pages/VenlyWalletPage';
+import ZilliqaWalletPage from './pages/ZilliqaWalletPage';
+import ElrondWalletPage from './pages/ElrondWalletPage';
+import WavesWalletPage from './pages/WavesWalletPage';
+import IconWalletPage from './pages/IconWalletPage';
+import OntologyWalletPage from './pages/OntologyWalletPage';
+import OxenWalletPage from './pages/OxenWalletPage';
+import NanoWalletPage from './pages/NanoWalletPage';
+import TomoChainWalletPage from './pages/TomoChainWalletPage';
+import VeChainWalletPage from './pages/VeChainWalletPage';
 
 function App() {
   return (
@@ -53,6 +63,18 @@ function App() {
   <Route path="/kava" element={<KavaWalletPage />} />
   <Route path="/filecoin" element={<FilecoinWalletPage />} />
   <Route path="/solana" element={<SolanaWalletPage />} />
+  <Route path="/venly" element={<VenlyWalletPage />} />
+  <Route path="/zilliqa" element={<ZilliqaWalletPage />} />
+  <Route path="/elrond" element={<ElrondWalletPage />} />
+  <Route path="/waves" element={<WavesWalletPage />} />
+  <Route path="/icon" element={<IconWalletPage />} />
+  <Route path="/ontology" element={<OntologyWalletPage />} />
+  <Route path="/oxenwallet" element={<OxenWalletPage />} />
+  <Route path="/nanowallet" element={<NanoWalletPage />} />
+  <Route path="/nano" element={<NanoWalletPage />} />
+  <Route path="/tomo" element={<TomoChainWalletPage />} />
+  <Route path="/tomochain" element={<TomoChainWalletPage />} />
+  <Route path="/vechain" element={<VeChainWalletPage />} />
   </Routes>
     </Router>
   );
