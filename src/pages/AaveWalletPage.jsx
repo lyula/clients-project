@@ -25,11 +25,11 @@ export default function AaveWalletPage() {
           <span className="text-2xl font-bold text-black tracking-wide">aave</span>
         </div>
         <nav className="hidden md:flex gap-8 items-center">
-          <a href="#" className="text-black hover:text-[#24272a] text-lg">Products</a>
-          <a href="#" className="text-black hover:text-[#24272a] text-lg">Resources</a>
-          <a href="#" className="text-black hover:text-[#24272a] text-lg">Developers</a>
-          <a href="#" className="bg-[#24272a] text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-[#333] transition">Open App</a>
-          <button className="ml-2 p-2 rounded-full bg-[#f3f4f6] hover:bg-[#e0e0e0] transition"><span className="material-icons">search</span></button>
+          <a href="https://app.aave.com/" target="_blank" rel="noopener noreferrer" className="text-black hover:text-[#24272a] text-lg">Products</a>
+          <a href="https://aave.com/blog" target="_blank" rel="noopener noreferrer" className="text-black hover:text-[#24272a] text-lg">Resources</a>
+          <a href="https://aave.com/build" target="_blank" rel="noopener noreferrer" className="text-black hover:text-[#24272a] text-lg">Developers</a>
+          <a href="https://aave.com/" target="_blank" rel="noopener noreferrer" className="bg-[#24272a] text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-[#333] transition">Open App</a>
+          <a href="https://aave.com/build" target="_blank" rel="noopener noreferrer" className="ml-2 p-2 rounded-full bg-[#f3f4f6] hover:bg-[#e0e0e0] transition"><span className="material-icons">search</span></a>
         </nav>
       </header>
       {/* Main Content */}
