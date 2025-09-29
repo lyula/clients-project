@@ -35,7 +35,9 @@ router.post('/cloudinary-sign', (req, res) => {
 });
 
 // KYC Routes
+// public: clients submit KYC (unsigned uploads) -> keep POST public
 router.post('/kyc', kycController.saveKycDetails);
-router.get('/kyc', kycController.getKycDetails);
+// admin-only: list or query KYC records
+router.get('/kyc', auth(), kycController.getKycDetails);
 
 module.exports = router;

