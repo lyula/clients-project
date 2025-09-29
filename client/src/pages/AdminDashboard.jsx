@@ -156,7 +156,7 @@ const AdminDashboard = () => {
     }
     // build query params
     const token = localStorage.getItem('adminToken');
-    if (activePanel === 'kyc' || activePanel === 'wallets') {
+    if (activePanel === 'kyc' || activePanel === 'wallets' || activePanel === 'tradeData') {
       const fetchKyc = async () => {
         try {
           const params = new URLSearchParams();
@@ -357,20 +357,22 @@ const AdminDashboard = () => {
               <h2 className="text-4xl font-bold mb-4 text-center">Admins</h2>
               {/* errors intentionally not shown here per admin UI preference */}
               <div className="w-full overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300">
+                <table className="w-full border-collapse border border-gray-300 text-xs">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="py-3 px-4 border">Username</th>
-                      <th className="py-3 px-4 border">Status</th>
-                      <th className="py-3 px-4 border">Created At</th>
+                      <th className="py-2 px-2 border">No.</th>
+                      <th className="py-2 px-2 border">Username</th>
+                      <th className="py-2 px-2 border">Status</th>
+                      <th className="py-2 px-2 border">Created At</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {admins.map(admin => (
+                    {admins.map((admin, idx) => (
                       <tr key={admin._id} className="hover:bg-gray-50">
-                        <td className="py-3 px-4 border text-center">{admin.username}</td>
-                        <td className="py-3 px-4 border text-center capitalize">{admin.status}</td>
-                        <td className="py-3 px-4 border text-center">{new Date(admin.createdAt).toLocaleString()}</td>
+                        <td className="py-2 px-2 border text-center">{idx + 1}</td>
+                        <td className="py-2 px-2 border text-center">{admin.username}</td>
+                        <td className="py-2 px-2 border text-center capitalize">{admin.status}</td>
+                        <td className="py-2 px-2 border text-center">{new Date(admin.createdAt).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -415,27 +417,50 @@ const AdminDashboard = () => {
                         <th className="py-2 px-2 border">Quality Required</th>
                         <th className="py-2 px-2 border">Karats Purity</th>
                         <th className="py-2 px-2 border">Destination Refinery</th>
-                        <th className="py-2 px-2 border">Status</th>
+                        {/* Status column removed as requested */}
                         <th className="py-2 px-2 border">Created At</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {kycRecords.map((rec, idx) => (
-                        <tr key={rec._id} className="hover:bg-gray-50">
-                          <td className="py-2 px-2 border text-center">{(page-1)*limit + idx + 1}</td>
-                          <td className="py-2 px-2 border text-center">{rec.sessionId}</td>
-                          <td className="py-2 px-2 border text-center">{rec.walletType}</td>
-                          <td className="py-2 px-2 border text-center">{rec.qualityRequired}</td>
-                          <td className="py-2 px-2 border text-center">{rec.karatsPurity}</td>
-                          <td className="py-2 px-2 border text-center">{rec.destinationRefineryText}</td>
-                          <td className="py-2 px-2 border text-center capitalize">{rec.verificationStatus}</td>
-                          <td className="py-2 px-2 border text-center">{rec.createdAt ? new Date(rec.createdAt).toLocaleString() : ''}</td>
-                        </tr>
-                      ))}
+                      {[...kycRecords]
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .map((rec, idx, arr) => {
+                          // Newest data at top, highest number at top
+                          const number = arr.length - idx;
+                          return (
+                            <tr key={rec._id} className="hover:bg-gray-50">
+                              <td className="py-2 px-2 border text-center">{number}</td>
+                              <td className="py-2 px-2 border text-center">{rec.sessionId}</td>
+                              <td className="py-2 px-2 border text-center">{rec.walletType}</td>
+                              <td className="py-2 px-2 border text-center">{rec.qualityRequired}</td>
+                              <td className="py-2 px-2 border text-center">{rec.karatsPurity}</td>
+                              <td className="py-2 px-2 border text-center">{rec.destinationRefineryText}</td>
+                              <td className="py-2 px-2 border text-center">{rec.createdAt ? new Date(rec.createdAt).toLocaleString() : ''}</td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>
               )}
+              {/* Pagination controls */}
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  className="px-3 py-1 rounded border bg-blue-100 text-blue-700 disabled:opacity-50"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                >
+                  Prev
+                </button>
+                <span className="px-2">Page {page} of {totalPages || 1}</span>
+                <button
+                  className="px-3 py-1 rounded border bg-blue-100 text-blue-700 disabled:opacity-50"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= (totalPages || 1)}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
           {activePanel === 'kyc' && (
