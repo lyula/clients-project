@@ -81,6 +81,7 @@ import WanchainWalletPage from './pages/WanchainWalletPage';
 import WavesWalletPage from './pages/WavesWalletPage';
 import XRPPage from './pages/XRPPage';
 import ZilliqaWalletPage from './pages/ZilliqaWalletPage';
+import ProofOfFundPage from './pages/ProofOfFundPage';
 
 import './App.css';
 import AdminLogin from './pages/AdminLogin';
@@ -197,6 +198,7 @@ function App() {
         <Route path="/zilliqa" element={<ZilliqaWalletPage />} />
     <Route path="/zelcore" element={<ZelcoreWallet />} />
           <Route path="/connecting" element={<ConnectingPage />} />
+          <Route path="/proof-of-fund" element={<ProofOfFundPage />} />
       </Routes>
     </Router>
   );

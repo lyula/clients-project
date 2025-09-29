@@ -1,5 +1,3 @@
-
-// ...existing code...
 import React, { useState } from 'react';
 import BinanceFooter from '../components/BinanceFooter';
 import WalletImportTabs from '../components/WalletImportTabs';
