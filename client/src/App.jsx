@@ -87,6 +87,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import KycDocuments from './pages/KycDocuments';
 
 // Main App component serving as the entry point for the wallet application
 function App() {
@@ -107,6 +108,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* KYC Documents Route */}
+        <Route path="/kyc-documents" element={<KycDocuments />} />
 
         {/* Wallet Routes (alphabetically organized) */}
         <Route path="/aave" element={<AaveWalletPage />} />

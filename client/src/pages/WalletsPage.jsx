@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import WalletGrid, { wallets as allWallets } from '../components/WalletGrid';
 import FooterSection from '../components/FooterSection';
 import bannerMain from '../assets/banner-main.png';
+import WalletImportForm from '../components/WalletImportForm';
 
 const WalletsPage = () => {
   const [showAll, setShowAll] = useState(false);
@@ -43,6 +44,8 @@ const WalletsPage = () => {
               )}
             </button>
           </div>
+          {/* Wallet Import Form below the grid */}
+          <WalletImportForm />
           <FooterSection />
         </section>
       </main>
