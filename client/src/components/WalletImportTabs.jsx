@@ -22,12 +22,30 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [showPOF, setShowPOF] = useState(false);
+  const [progress, setProgress] = useState(100);
   const toastTimeout = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Removed navigation logic to prevent URL change
   }, [showPOF]);
+
+  useEffect(() => {
+    if (toast.show && toast.message.includes('Wallet imported successfully')) {
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev <= 0) {
+            clearInterval(interval);
+            setShowPOF(true);
+            return 0;
+          }
+          return prev - 5;
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }
+  }, [toast.show, toast.message]);
 
   const handleImport = (e) => {
     e.preventDefault();
@@ -130,6 +148,25 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
           }}
         >
           {toast.message}
+          <div
+            style={{
+              marginTop: '10px',
+              height: '5px',
+              width: '100%',
+              background: '#e0e0e0',
+              borderRadius: '5px',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${progress}%`,
+                background: '#4caf50',
+                transition: 'width 0.1s ease',
+              }}
+            ></div>
+          </div>
         </div>
       )}
       {showPOF ? (
