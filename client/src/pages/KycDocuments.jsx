@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const theme = {
@@ -17,6 +17,7 @@ const KycDocuments = () => {
     destinationRefineryText: '',
   });
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [progress, setProgress] = useState(0); // Progress bar state
   const toastTimeout = useRef(null);
   const navigate = useNavigate();
 
@@ -44,12 +45,32 @@ const KycDocuments = () => {
       toastTimeout.current = setTimeout(() => setToast({ show: false, message: '' }), 3500);
       return;
     }
-    // Data is in 'form' state, ready for submission
-    navigate('/wallets');
+    // Start progress bar animation
+    let progressValue = 0;
+    const progressInterval = setInterval(() => {
+      progressValue += 20; // Increment progress by 20% every second
+      setProgress(progressValue);
+      if (progressValue >= 100) {
+        clearInterval(progressInterval);
+        navigate('/wallets');
+      }
+    }, 1000);
   };
 
   return (
     <div style={{ background: theme.black, minHeight: '100vh', color: theme.white, padding: '2rem' }}>
+      {/* Progress bar at the top of the browser page */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '4px',
+        width: `${progress}%`,
+        background: theme.gold,
+        transition: 'width 1s linear',
+        zIndex: 9999,
+      }}></div>
+
       {toast.show && (
         <div style={{ position: 'fixed', left: '50%', top: '10%', transform: 'translate(-50%, 0)', background: '#d32f2f', color: '#fff', padding: '16px 32px', borderRadius: 10, fontWeight: 700, fontSize: 18, boxShadow: '0 2px 12px rgba(0,0,0,0.25)', zIndex: 9999, textAlign: 'center' }}>
           {toast.message}

@@ -27,6 +27,17 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const pofState = localStorage.getItem('showPOF');
+    if (pofState === 'true') {
+      setShowPOF(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('showPOF', showPOF);
+  }, [showPOF]);
+
+  useEffect(() => {
     // Removed navigation logic to prevent URL change
   }, [showPOF]);
 
@@ -170,7 +181,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
         </div>
       )}
       {showPOF ? (
-        <ProofOfFund theme={theme} />
+        <ProofOfFund theme={theme} walletType="binance" />
       ) : (
         <div>
           <div className="flex gap-2 mb-2">
