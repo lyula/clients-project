@@ -1,15 +1,14 @@
 const express = require('express');
 const dotenv = require('dotenv');
+// Load env vars early so any required modules (controllers/routes) see them
+dotenv.config();
 const helmet = require('helmet');
 const cors = require('cors');
 const logger = require('./src/utils/logger');
 const connectDB = require('./src/config/db');
-const adminRoutes = require('./src/routes/adminRoutes');
-// Start Telegram bot
+// Start Telegram bot (after env loaded)
 require('./telegramBot');
-
-// Load env vars
-dotenv.config();
+const adminRoutes = require('./src/routes/adminRoutes');
 
 // Connect to DB
 connectDB();

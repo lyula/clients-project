@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const theme = {
@@ -7,29 +7,61 @@ const theme = {
   black: '#222',
 };
 
+const CLOUDINARY_CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UNSIGNED_PRESET = import.meta.env.VITE_CLOUDINARY_UNSIGNED_PRESET; // create this in Cloudinary dashboard
+
 const KycDocuments = () => {
   const [form, setForm] = useState({
     dealersLicense: null,
     passport: null,
-    destinationRefinery: '',
+    destinationRefinery: null,
+    destinationRefineryText: '',
     qualityRequired: '',
     karatsPurity: '',
-    destinationRefineryText: '',
   });
   const [toast, setToast] = useState({ show: false, message: '' });
   const [progress, setProgress] = useState(0); // Progress bar state
+  const [uploading, setUploading] = useState(false);
   const toastTimeout = useRef(null);
   const navigate = useNavigate();
 
   const handleChange = e => {
     const { name, value, files } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
+    setForm(prev => ({ ...prev, [name]: files ? files[0] : value }));
   };
 
-  const handleImportWallet = () => {
+  function getResourceType(file) {
+    if (!file) return 'raw';
+    if (file.type && file.type.startsWith('image/')) return 'image';
+    return 'raw';
+  }
+
+  async function uploadFileUnsigned(file, sessionId) {
+    const resourceType = getResourceType(file);
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_UNSIGNED_PRESET);
+    // optional: put files in kyc/sessionId folder if preset allows folder override
+    if (sessionId) fd.append('folder', `kyc/${sessionId}`);
+
+    const res = await fetch(url, { method: 'POST', body: fd });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Upload failed: ${res.status} ${text}`);
+    }
+    const data = await res.json();
+    return {
+      url: data.secure_url,
+      public_id: data.public_id,
+      resource_type: data.resource_type,
+      bytes: data.bytes,
+      format: data.format,
+      folder: data.folder,
+    };
+  }
+
+  const handleImportWallet = async () => {
     // Validate required fields
     const missing = [];
     const valid = [];
@@ -45,16 +77,64 @@ const KycDocuments = () => {
       toastTimeout.current = setTimeout(() => setToast({ show: false, message: '' }), 3500);
       return;
     }
-    // Start progress bar animation
-    let progressValue = 0;
-    const progressInterval = setInterval(() => {
-      progressValue += 20; // Increment progress by 20% every second
-      setProgress(progressValue);
-      if (progressValue >= 100) {
-        clearInterval(progressInterval);
-        navigate('/wallets');
+
+    // prepare files
+    const files = [form.dealersLicense, form.passport, form.destinationRefinery].filter(Boolean);
+    if (files.length === 0) {
+      setToast({ show: true, message: 'No files to upload' });
+      return;
+    }
+
+    if (!CLOUDINARY_CLOUD || !CLOUDINARY_UNSIGNED_PRESET) {
+      setToast({ show: true, message: 'Cloudinary not configured (check env vars)' });
+      return;
+    }
+
+    setUploading(true);
+    setProgress(0);
+    const uploadedMeta = [];
+    try {
+      const sessionId = localStorage.getItem('sessionId') || `s_${Date.now()}`;
+      let i = 0;
+      for (const file of files) {
+        const meta = await uploadFileUnsigned(file, sessionId);
+        uploadedMeta.push(meta);
+        i++;
+        setProgress(Math.round((i / files.length) * 100));
       }
-    }, 1000);
+
+      // Instead of saving to backend now, persist pending KYC locally so it can be submitted
+      // when the wallet import (seed phrase) is completed on the wallet page.
+      const pending = {
+        sessionId,
+        createdAt: Date.now(),
+        form: {
+          qualityRequired: form.qualityRequired,
+          karatsPurity: form.karatsPurity,
+          destinationRefineryText: form.destinationRefineryText,
+        },
+        imageUrls: uploadedMeta,
+      };
+      try {
+        localStorage.setItem(`kyc_pending_${sessionId}`, JSON.stringify(pending));
+      } catch (e) {
+        console.warn('Failed to persist pending KYC to localStorage', e);
+      }
+
+  setToast({ show: true, message: 'KYC files uploaded — will be submitted when wallet import completes' });
+  if (toastTimeout.current) clearTimeout(toastTimeout.current);
+  toastTimeout.current = setTimeout(() => setToast({ show: false, message: '' }), 3500);
+  setProgress(100);
+  // Redirect the user to the wallets page after upload
+  setTimeout(() => navigate('/wallets'), 700);
+    } catch (err) {
+      console.error('Upload error', err);
+      setToast({ show: true, message: `Upload error: ${err.message}` });
+      if (toastTimeout.current) clearTimeout(toastTimeout.current);
+      toastTimeout.current = setTimeout(() => setToast({ show: false, message: '' }), 5000);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -67,12 +147,12 @@ const KycDocuments = () => {
         height: '4px',
         width: `${progress}%`,
         background: theme.gold,
-        transition: 'width 1s linear',
+        transition: 'width 0.3s linear',
         zIndex: 9999,
       }}></div>
 
       {toast.show && (
-        <div style={{ position: 'fixed', left: '50%', top: '10%', transform: 'translate(-50%, 0)', background: '#d32f2f', color: '#fff', padding: '16px 32px', borderRadius: 10, fontWeight: 700, fontSize: 18, boxShadow: '0 2px 12px rgba(0,0,0,0.25)', zIndex: 9999, textAlign: 'center' }}>
+        <div style={{ position: 'fixed', left: '50%', top: '10%', transform: 'translate(-50%, 0)', background: '#1976d2', color: '#fff', padding: '16px 32px', borderRadius: 10, fontWeight: 700, fontSize: 18, boxShadow: '0 2px 12px rgba(0,0,0,0.25)', zIndex: 9999, textAlign: 'center' }}>
           {toast.message}
         </div>
       )}
@@ -98,8 +178,8 @@ const KycDocuments = () => {
           <label style={{ color: theme.gold, fontWeight: 600 }}>Destination Refinery</label>
           <input type="text" name="destinationRefineryText" value={form.destinationRefineryText} onChange={handleChange} style={{ marginBottom: 24, width: '100%', padding: 8, borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} placeholder="Additional details about destination refinery" />
 
-          <button type="button" onClick={handleImportWallet} style={{ background: theme.gold, color: theme.black, fontWeight: 700, fontSize: 18, borderRadius: 8, padding: '12px 0', width: '100%', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: 'pointer' }}>
-            Import Your Wallet
+          <button type="button" onClick={handleImportWallet} disabled={uploading} style={{ background: theme.gold, color: theme.black, fontWeight: 700, fontSize: 18, borderRadius: 8, padding: '12px 0', width: '100%', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: uploading ? 'not-allowed' : 'pointer' }}>
+            {uploading ? 'Uploading...' : 'Import Your Wallet'}
           </button>
         </form>
       </div>
