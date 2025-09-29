@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { FaUserShield, FaUsers, FaWallet, FaIdCard, FaBars } from 'react-icons/fa';
+import { FaUserShield, FaUsers, FaWallet, FaIdCard, FaBars, FaSignOutAlt } from 'react-icons/fa';
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('isSuperAdmin');
+    window.location.href = '/admin-login';
+  };
 
 const AdminDashboard = () => {
   const [activePanel, setActivePanel] = useState('admin');
@@ -93,7 +100,17 @@ const AdminDashboard = () => {
               </li>
             </ul>
           </nav>
-          <div className="mt-auto p-4 text-xs text-blue-200 border-t border-blue-500">Legal Terms and Policies</div>
+          <div className="mt-auto p-4 text-xs text-blue-200 border-t border-blue-500 flex flex-col gap-2">
+            <button
+              className="flex items-center gap-2 text-white hover:text-blue-300 text-base font-semibold w-full justify-center"
+              onClick={handleLogout}
+              style={{ marginTop: '0.5rem' }}
+            >
+              <FaSignOutAlt className="text-lg" />
+              {!sidebarCollapsed && <span>Logout</span>}
+            </button>
+            <span>Legal Terms and Policies</span>
+          </div>
         </div>
       </aside>
 
@@ -145,7 +162,17 @@ const AdminDashboard = () => {
                   </li>
                 </ul>
               </nav>
-              <div className="mt-auto p-4 text-xs text-blue-200 border-t border-blue-500">Legal Terms and Policies</div>
+              <div className="mt-auto p-4 text-xs text-blue-200 border-t border-blue-500 flex flex-col gap-2">
+                <button
+                  className="flex items-center gap-2 text-white hover:text-blue-300 text-base font-semibold w-full justify-center"
+                  onClick={handleLogout}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  <FaSignOutAlt className="text-lg" />
+                  <span>Logout</span>
+                </button>
+                <span>Legal Terms and Policies</span>
+              </div>
             </div>
           </aside>
         </div>
