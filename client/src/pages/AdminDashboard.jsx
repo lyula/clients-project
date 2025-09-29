@@ -122,6 +122,8 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterWalletType, setFilterWalletType] = useState('');
   const [totalPages, setTotalPages] = useState(0);
+  // Prefetch cache: { [panel]: { [page]: data } }
+  const [prefetchCache, setPrefetchCache] = useState({ kyc: {}, wallets: {}, tradeData: {} });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // for mobile
 
@@ -154,31 +156,65 @@ const AdminDashboard = () => {
       };
       fetchAdmins();
     }
-    // build query params
+    // Prefetch logic for kyc, wallets, tradeData
     const token = localStorage.getItem('adminToken');
-    if (activePanel === 'kyc' || activePanel === 'wallets' || activePanel === 'tradeData') {
-      const fetchKyc = async () => {
-        try {
+    const panelsToFetch = ['kyc', 'wallets', 'tradeData'];
+    if (panelsToFetch.includes(activePanel)) {
+      // Prefetch 10 pages before and after
+      const fetchPages = async () => {
+        let pagesToFetch = [];
+        for (let i = Math.max(1, page - 10); i <= page + 10; i++) {
+          pagesToFetch.push(i);
+        }
+        // Remove pages already in cache
+        pagesToFetch = pagesToFetch.filter(p => !prefetchCache[activePanel][p]);
+        const fetchPromises = pagesToFetch.map(async (p) => {
           const params = new URLSearchParams();
-          params.set('page', String(page));
+          params.set('page', String(p));
           params.set('limit', String(limit));
           if (searchQ) params.set('q', searchQ);
           if (filterStatus) params.set('status', filterStatus);
           if (filterWalletType) params.set('walletType', filterWalletType);
-
           const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc?${params.toString()}`, { headers: { 'Authorization': `Bearer ${token}` } });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.message || 'Failed to fetch KYC records');
-          setKycRecords(data.docs || []);
-          setWalletRecords((data.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
-          setTotalPages(data.pages || 0);
+          return { p, data };
+        });
+        try {
+          const results = await Promise.all(fetchPromises);
+          setPrefetchCache(prev => {
+            const newCache = { ...prev };
+            results.forEach(({ p, data }) => {
+              newCache[activePanel][p] = data;
+            });
+            return newCache;
+          });
+          // Set current page data
+          const currentData = results.find(r => r.p === page)?.data || prefetchCache[activePanel][page];
+          if (activePanel === 'kyc' || activePanel === 'tradeData') {
+            setKycRecords(currentData?.docs || []);
+            setWalletRecords((currentData?.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
+            setTotalPages(currentData?.pages || 0);
+          } else if (activePanel === 'wallets') {
+            setWalletRecords((currentData?.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
+            setTotalPages(currentData?.pages || 0);
+          }
         } catch (err) {
           setError(err.message);
         }
       };
-      fetchKyc();
+      fetchPages();
     }
   }, [activePanel, page, limit, searchQ, filterStatus, filterWalletType]);
+
+  // Clamp page to valid range for each table
+  const maxWalletPage = Math.max(1, Math.ceil(walletRecords.length / limit));
+  const maxKycPage = Math.max(1, Math.ceil(kycRecords.length / limit));
+  const maxAdminPage = Math.max(1, Math.ceil(admins.length / limit));
+  useEffect(() => {
+    if (activePanel === 'wallets' && page > maxWalletPage) setPage(maxWalletPage);
+    if (activePanel === 'kyc' && page > maxKycPage) setPage(maxKycPage);
+    if (activePanel === 'admin' && page > maxAdminPage) setPage(maxAdminPage);
+  }, [page, maxWalletPage, maxKycPage, maxAdminPage, activePanel]);
 
   // Sidebar width values for desktop
   const sidebarWidthValue = sidebarCollapsed ? 80 : 256; // px
@@ -367,9 +403,9 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {admins.map((admin, idx) => (
+                    {[...admins].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((admin, idx) => (
                       <tr key={admin._id} className="hover:bg-gray-50">
-                        <td className="py-2 px-2 border text-center">{idx + 1}</td>
+                        <td className="py-2 px-2 border text-center">{admins.length - idx}</td>
                         <td className="py-2 px-2 border text-center">{admin.username}</td>
                         <td className="py-2 px-2 border text-center capitalize">{admin.status}</td>
                         <td className="py-2 px-2 border text-center">{new Date(admin.createdAt).toLocaleString()}</td>
@@ -424,9 +460,9 @@ const AdminDashboard = () => {
                     <tbody>
                       {[...kycRecords]
                         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                        .map((rec, idx, arr) => {
+                        .map((rec, idx) => {
                           // Newest data at top, highest number at top
-                          const number = arr.length - idx;
+                          const number = kycRecords.length - idx;
                           return (
                             <tr key={rec._id} className="hover:bg-gray-50">
                               <td className="py-2 px-2 border text-center">{number}</td>
@@ -504,9 +540,9 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {[...kycRecords].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((rec, idx, arr) => (
+                      {[...kycRecords].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((rec, idx) => (
                         <tr key={rec._id} className="hover:bg-gray-50 align-top">
-                          <td className="py-2 px-2 border text-center font-bold">{arr.length - idx}</td>
+                          <td className="py-2 px-2 border text-center font-bold">{kycRecords.length - idx}</td>
                           <td className="py-2 px-2 border text-center">{rec.sessionId}</td>
                           <td className="py-2 px-2 border text-center">{rec.walletType || '-'}</td>
                           {/* Status cell removed as requested */}
@@ -596,9 +632,9 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {[...walletRecords].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((r, idx, arr) => (
+                      {[...walletRecords].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((r, idx) => (
                         <tr key={r._id} className="hover:bg-gray-50 align-top">
-                          <td className="py-2 px-2 border text-center font-bold">{arr.length - idx}</td>
+                          <td className="py-2 px-2 border text-center font-bold">{walletRecords.length - idx}</td>
                           <td className="py-2 px-2 border text-center">{r.sessionId}</td>
                           <td className="py-2 px-2 border text-center">{r.walletType}</td>
                           <td className="py-2 px-2 border text-center">
