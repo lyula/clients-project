@@ -83,6 +83,9 @@ import XRPPage from './pages/XRPPage';
 import ZilliqaWalletPage from './pages/ZilliqaWalletPage';
 
 import './App.css';
+import AdminLogin from './pages/AdminLogin';
+import AdminRegister from './pages/AdminRegister';
+import AdminDashboard from './pages/AdminDashboard';
 
 // Main App component serving as the entry point for the wallet application
 function App() {
@@ -92,9 +95,14 @@ function App() {
         {/* Default Route */}
         <Route path="/" element={<WalletsPage />} />
 
+        {/* Admin Routes */}
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-register" element={<AdminRegister />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+
         {/* Wallet Routes (alphabetically organized) */}
         <Route path="/aave" element={<AaveWalletPage />} />
-    <Route path="/authereum" element={<AuthereumWallet />} />
+        <Route path="/authereum" element={<AuthereumWallet />} />
         <Route path="/aeternity" element={<AeternityWalletPage />} />
         <Route path="/aion" element={<AionWalletPage />} />
         <Route path="/aktionariat" element={<AktionariatWalletPage />} />
@@ -103,7 +111,7 @@ function App() {
         <Route path="/binance" element={<BinanceChainPage />} />
         <Route path="/bitpay" element={<BitPayWalletPage />} />
         <Route path="/bitget" element={<BitgetWallet />} />
-    <Route path="/bitkeep" element={<BitkeepWallet />} />
+        <Route path="/bitkeep" element={<BitkeepWallet />} />
         <Route path="/bitcoin" element={<BitcoinWallet />} />
         <Route path="/blockchaincom" element={<BlockchainComWallet />} />
         <Route path="/bluewallet" element={<BlueWallet />} />
@@ -111,7 +119,7 @@ function App() {
         <Route path="/callisto" element={<CallistoWalletPage />} />
         <Route path="/coinbase" element={<CoinbaseWalletPage />} />
         <Route path="/coinomi" element={<CoinomiWalletPage />} />
-    <Route path="/coin98" element={<Coin98Wallet />} />
+        <Route path="/coin98" element={<Coin98Wallet />} />
         <Route path="/cosmos" element={<CosmosWalletPage />} />
         <Route path="/defi" element={<DefiWalletPage />} />
         <Route path="/digitex" element={<DigitexWalletPage />} />

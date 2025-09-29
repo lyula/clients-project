@@ -1,0 +1,46 @@
+# Node modules
+node_modules/
+
+# Environment variables and sensitive config
+.env
+.env.*
+config.js
+config/*.js
+config/*.json
+
+# Log files
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build output
+/dist
+/build
+
+# Misc
+*.sqlite
+*.db
+*.pem
+*.key
+*.crt
+
+# Ignore coverage and test output
+coverage/
+.nyc_output/
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore uploads and user files
+uploads/
+public/uploads/
+
+# Ignore secrets
+secrets/
+*.secret
