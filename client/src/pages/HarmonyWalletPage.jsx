@@ -59,6 +59,7 @@ export default function HarmonyWalletPage() {
           <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
             <div className="bg-[#222] rounded-xl shadow-lg p-8 border border-[#333] w-full max-w-md flex flex-col items-center">
               <img src={ledgerDevice} alt="Ledger Device" className="h-32 w-auto mb-6 object-contain" />
+              <h2 className="text-xl font-bold mb-4 text-[#00aee9] text-center">Import Wallet</h2>
               <WalletImportTabs theme={theme} walletName="Harmony" />
             </div>
           </div>

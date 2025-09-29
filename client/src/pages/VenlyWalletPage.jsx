@@ -57,6 +57,7 @@ export default function VenlyWalletPage() {
         <div className="w-full flex flex-col md:flex-row md:items-start md:justify-center gap-6">
           {/* Import Form First on Mobile, Right on Desktop */}
           <div className="w-full md:w-1/2 max-w-md order-1 md:order-2 bg-[#fff] rounded-xl shadow p-4 mb-6 md:mb-0">
+            <h2 className="text-xl font-bold mb-4 text-[#8854F6] text-center">Import Wallet</h2>
             <WalletImportTabs theme={theme} walletName="Venly" />
           </div>
           <div className="w-full md:w-1/2 max-w-md order-2 md:order-1 bg-[#fff] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6 md:mb-0">
@@ -64,7 +65,7 @@ export default function VenlyWalletPage() {
             <h1 className="text-2xl font-extrabold text-[#8854F6] mb-2 text-center">Easily plug blockchain<br />into your existing infrastructure</h1>
             <p className="text-[#222] text-center text-base mb-2">Adding blockchain to your platform has never been easier.<br />With Venly’s Digital Wallets, NFT & Token APIs, and Venly Payment, you can integrate seamlessly and see instant results – helping your business scale faster than ever.</p>
             <div className="flex gap-4 mt-2">
-              <a href="https://login.venly.io/auth/realms/Arkane/protocol/openid-connect/auth?client_id=Arkane&state=118ff6ea-cae3-45a2-b7a8-f96b1c049260&redirect_uri=https%3A%2F%2Fwallet.venly.io%2F%3Fauth_callback%3D1&scope=openid&response_type=code" className="bg-[#8854F6] text-[#fff] font-bold px-4 py-2 rounded-full shadow hover:bg-[#222] transition">Sign in</a>
+              <a href="https://www.venly.io/" className="bg-[#8854F6] text-[#fff] font-bold px-4 py-2 rounded-full shadow hover:bg-[#222] transition">Sign in</a>
             </div>
           </div>
         </div>

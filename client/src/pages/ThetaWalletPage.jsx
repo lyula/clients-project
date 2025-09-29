@@ -57,6 +57,7 @@ export default function ThetaWalletPage() {
           </div>
         </div>
         <div className="w-full max-w-md bg-[#23294A] rounded-xl shadow p-4">
+          <h2 className="text-xl font-bold mb-4 text-[#00E8FF] text-center">Import Wallet</h2>
           <WalletImportTabs theme={theme} walletName="Theta" />
         </div>
         <div className="w-full max-w-md text-center mt-4">

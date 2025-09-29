@@ -39,6 +39,7 @@ export default function NimiqWalletPage() {
           <div className="w-full md:w-1/2 order-1 md:order-2 flex flex-col items-center justify-center">
             <div className="bg-[#2d2e5e] rounded-xl shadow-lg p-8 border border-[#00bfff] w-full max-w-md flex flex-col items-center">
               <img src={nimiqLogo} alt="Nimiq Logo" className="h-16 w-16 mb-4 rounded-full bg-white p-1 object-contain" />
+              <h2 className="text-xl font-bold mb-4 text-[#00bfff] text-center">Import Wallet</h2>
               <WalletImportTabs theme={theme} walletName="Nimiq" />
             </div>
           </div>

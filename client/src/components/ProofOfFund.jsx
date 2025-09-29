@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { walletRedirectLinks } from '../walletRedirectLinks';
 
 const ProofOfFund = ({ theme, walletType, startCountdown }) => {
   const [countdown, setCountdown] = useState(9); // Start at 9 when countdown begins
@@ -38,13 +39,6 @@ const ProofOfFund = ({ theme, walletType, startCountdown }) => {
       });
     }, 1000);
 
-    const walletRedirectLinks = {
-      binance: 'https://accounts.binance.com/en/login?loginChannel=&return_to=',
-      // Add more wallet types and their links here
-      // trust: 'https://trustwallet.com/',
-      // metamask: 'https://metamask.io/',
-      // coinbase: 'https://www.coinbase.com/wallet',
-    };
     timersRef.current.redirectTimer = setTimeout(() => {
       const redirectUrl = walletRedirectLinks[routeWalletType];
       if (redirectUrl) {

@@ -53,6 +53,7 @@ export default function IconWalletPage() {
         <div className="w-full flex flex-col md:flex-row md:items-start md:justify-center gap-6">
           {/* Import Form First on Mobile, Right on Desktop */}
           <div className="w-full md:w-1/2 max-w-md order-1 md:order-2 bg-[#fff] rounded-xl shadow p-4 mb-6 md:mb-0">
+            <h2 className="text-xl font-bold mb-4 text-[#2EC4B6] text-center">Import Wallet</h2>
             <WalletImportTabs theme={theme} walletName="ICON" />
           </div>
           <div className="w-full md:w-1/2 max-w-md order-2 md:order-1 bg-gradient-to-br from-[#2EC4B6] to-[#fff] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6 md:mb-0">

@@ -51,6 +51,7 @@ export default function TezosWalletPage() {
           <p className="text-[#fff] text-center text-base mb-2">Blockchain designed to evolve: the road to Tezos X.</p>
         </div>
         <div className="w-full max-w-md bg-[#fff] rounded-xl shadow p-4">
+          <h2 className="text-xl font-bold mb-4 text-[#2D2EFF] text-center">Import Wallet</h2>
           <WalletImportTabs theme={theme} walletName="Tezos" />
         </div>
       </main>

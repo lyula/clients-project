@@ -51,6 +51,7 @@ export default function StellarWalletPage() {
           <p className="text-[#222] text-center text-base mb-2">Where blockchain meets the real world.</p>
         </div>
         <div className="w-full max-w-md bg-[#fff] rounded-xl shadow p-4">
+          <h2 className="text-xl font-bold mb-4 text-[#222] text-center">Import Wallet</h2>
           <WalletImportTabs theme={theme} walletName="Stellar" />
         </div>
       </main>

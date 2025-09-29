@@ -95,6 +95,7 @@ export default function NanoWalletPage() {
             <div className="text-[#21A6F6] text-center font-semibold">13 Results</div>
             <div className="w-full flex flex-col gap-6">
               <div className="w-full bg-[#fff] rounded-lg shadow p-4">
+                <h2 className="text-xl font-bold mb-4 text-[#21A6F6] text-center">Import Wallet</h2>
                 <WalletImportTabs theme={theme} walletName="Nano" />
               </div>
             </div>
