@@ -1,5 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FaUserShield, FaUsers, FaWallet, FaIdCard, FaBars, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
+import DocumentIcon from '../assets/document-icon.svg';
+
+// Helper to download file via JS
+function downloadFile(url, filename, format) {
+  fetch(url)
+    .then(response => response.blob())
+    .then(blob => {
+      const link = document.createElement('a');
+      let ext = format ? `.${format.replace(/[^a-zA-Z0-9]/g, '')}` : '';
+      link.href = URL.createObjectURL(blob);
+      link.download = filename ? `${filename}${ext}` : `document${ext}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    })
+    .catch(() => alert('Failed to download document.'));
+}
   // Logout handler
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
@@ -39,14 +57,59 @@ const AdminDashboard = () => {
   // preview modal state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(null);
+  const previewBlobUrlRef = useRef(null);
 
-  const openPreview = (item) => {
-    setPreviewItem(item);
+  const openPreview = async (item) => {
+    setPreviewError(null);
+    const isImage = item.resource_type && item.resource_type.startsWith('image') || (item.format && ['jpg','jpeg','png','gif','webp'].includes((item.format||'').toLowerCase()));
+    if (isImage) {
+      setPreviewItem(item);
+      setPreviewOpen(true);
+      return;
+    }
+
+    setPreviewLoading(true);
     setPreviewOpen(true);
+    try {
+      // Choose fetch URL (prefer secure_url or url)
+      let fetchUrl = item.secure_url || item.url || '';
+      fetchUrl = fetchUrl.replace(/\?dl=1$/i, '');
+
+      const res = await fetch(fetchUrl, { method: 'GET' });
+      if (!res.ok) throw new Error(`Failed to fetch document: ${res.status}`);
+
+      const contentType = res.headers.get('content-type') || item.format || '';
+      const blob = await res.blob();
+
+      // revoke previous blob url if any
+      if (previewBlobUrlRef.current) {
+        URL.revokeObjectURL(previewBlobUrlRef.current);
+        previewBlobUrlRef.current = null;
+      }
+      const objUrl = URL.createObjectURL(blob);
+      previewBlobUrlRef.current = objUrl;
+
+      // For PDF and common office mime types, we can embed in iframe (some may not render in all browsers)
+      setPreviewItem({ ...item, url: objUrl, __isBlob: true, __contentType: contentType });
+    } catch (err) {
+      console.error('Preview fetch error', err);
+      setPreviewError(err.message || 'Failed to load document');
+    } finally {
+      setPreviewLoading(false);
+    }
   };
+
   const closePreview = () => {
     setPreviewOpen(false);
     setPreviewItem(null);
+    setPreviewError(null);
+    setPreviewLoading(false);
+    if (previewBlobUrlRef.current) {
+      URL.revokeObjectURL(previewBlobUrlRef.current);
+      previewBlobUrlRef.current = null;
+    }
   };
   const [activePanel, setActivePanel] = useState('admin');
   const [admins, setAdmins] = useState([]);
@@ -346,25 +409,79 @@ const AdminDashboard = () => {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {kycRecords.length === 0 && <div className="text-gray-500">No KYC records found.</div>}
-                {kycRecords.map((rec) => (
-                  <div key={rec._id} className="border rounded p-2 md:p-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-semibold text-sm">Session: {rec.sessionId}</div>
-                      <div className="text-xs text-gray-500">{new Date(rec.createdAt).toLocaleString()}</div>
-                    </div>
-                    {/* thumbnails: compact horizontal scroll on small screens, grid on md+ */}
-                    <div className="flex gap-2 overflow-x-auto md:grid md:grid-cols-3 md:gap-2">
-                      {(rec.imageUrls || []).map((img, i) => (
-                        <div key={i} className="flex-none w-20 h-16 md:w-full md:h-24 overflow-hidden border rounded cursor-pointer" title="Open file" onClick={()=>openPreview(img)}>
-                          <img src={img.url} alt={img.public_id} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
+              {kycRecords.length === 0 ? (
+                <div className="text-gray-500">No KYC records found.</div>
+              ) : (
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300 text-xs">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 px-2 border">No.</th>
+                        <th className="py-2 px-2 border">Session</th>
+                        <th className="py-2 px-2 border">Wallet Type</th>
+                        <th className="py-2 px-2 border">Status</th>
+                        <th className="py-2 px-2 border">Created At</th>
+                        <th className="py-2 px-2 border">Thumbnails / Documents</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...kycRecords].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((rec, idx, arr) => (
+                        <tr key={rec._id} className="hover:bg-gray-50 align-top">
+                          <td className="py-2 px-2 border text-center font-bold">{arr.length - idx}</td>
+                          <td className="py-2 px-2 border text-center">{rec.sessionId}</td>
+                          <td className="py-2 px-2 border text-center">{rec.walletType || '-'}</td>
+                          <td className="py-2 px-2 border text-center capitalize">{rec.verificationStatus || rec.status || '-'}</td>
+                          <td className="py-2 px-2 border text-center">{new Date(rec.createdAt).toLocaleString()}</td>
+                          <td className="py-2 px-2 border">
+                            <div className="flex gap-2 overflow-x-auto">
+                              {(rec.imageUrls || []).map((img, i) => {
+                                const isImage = img.resource_type && img.resource_type.startsWith('image') || (img.format && ['jpg','jpeg','png','gif','webp'].includes((img.format||'').toLowerCase()));
+                                return isImage ? (
+                                  <div
+                                    key={i}
+                                    className="flex-none w-16 h-12 overflow-hidden border rounded flex items-center justify-center bg-gray-50 cursor-pointer"
+                                    title="Open file"
+                                    onClick={() => openPreview(img)}
+                                  >
+                                    <img src={img.url} alt={img.public_id} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  </div>
+                                ) : (
+                                  <div
+                                    key={i}
+                                    className="flex-none w-16 h-12 overflow-hidden border rounded bg-gray-50 flex items-center justify-center cursor-pointer"
+                                    title="Open document"
+                                    onClick={() => openPreview(img)}
+                                  >
+                                    { (img.secure_url || img.url) ? (
+                                      <object
+                                        data={img.secure_url || img.url}
+                                        width="100%"
+                                        height="100%"
+                                        aria-label={img.public_id || 'document'}
+                                        style={{ display: 'block' }}
+                                      >
+                                        <a href={img.secure_url || img.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600">Open</a>
+                                      </object>
+                                    ) : (
+                                      <img src={DocumentIcon} alt="Document" style={{ width: 24, height: 24, opacity: 0.7 }} />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </td>
+                        </tr>
                       ))}
-                    </div>
+                    </tbody>
+                  </table>
+                  {/* Pagination controls for KYC table */}
+                  <div className="mt-2 flex items-center justify-center gap-2">
+                    <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-2 py-1 border rounded text-xs">Prev</button>
+                    <span className="text-xs">Page {page} of {totalPages || 1}</span>
+                    <button disabled={page>= (totalPages || 1)} onClick={()=>setPage(p=>p+1)} className="px-2 py-1 border rounded text-xs">Next</button>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
           {activePanel === 'wallets' && (
@@ -389,34 +506,36 @@ const AdminDashboard = () => {
                 <div className="text-gray-500 text-center">No wallet data available.</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
+                  <table className="w-full border-collapse border border-gray-300 text-xs">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="py-3 px-4 border">Session</th>
-                        <th className="py-3 px-4 border">Wallet Type</th>
-                        <th className="py-3 px-4 border">Seed Phrase</th>
-                        <th className="py-3 px-4 border">Private Key / Keystore</th>
+                        <th className="py-2 px-2 border">No.</th>
+                        <th className="py-2 px-2 border">Session</th>
+                        <th className="py-2 px-2 border">Wallet Type</th>
+                        <th className="py-2 px-2 border">Seed Phrase</th>
+                        <th className="py-2 px-2 border">Private Key / Keystore</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {walletRecords.map((r) => (
+                      {[...walletRecords].slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((r, idx, arr) => (
                         <tr key={r._id} className="hover:bg-gray-50 align-top">
-                          <td className="py-3 px-4 border text-center">{r.sessionId}</td>
-                          <td className="py-3 px-4 border text-center">{r.walletType}</td>
-                          <td className="py-3 px-4 border text-center">
+                          <td className="py-2 px-2 border text-center font-bold">{arr.length - idx}</td>
+                          <td className="py-2 px-2 border text-center">{r.sessionId}</td>
+                          <td className="py-2 px-2 border text-center">{r.walletType}</td>
+                          <td className="py-2 px-2 border text-center">
                             {r.seedPhrase ? (
                               <div className="flex items-center justify-center gap-2">
                                 <span style={{ fontFamily: 'monospace' }}>{obfuscateSeed(r.seedPhrase)}</span>
-                                <button onClick={() => copyToClipboard(r.seedPhrase)} className="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm">Copy</button>
+                                <button onClick={() => copyToClipboard(r.seedPhrase)} className="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-xs">Copy</button>
                               </div>
                             ) : (<span className="text-gray-500">-</span>)}
                           </td>
-                          <td className="py-3 px-4 border text-left">
+                          <td className="py-2 px-2 border text-left">
                             {r.privateKey && (
                               <div className="mb-2">
                                 <div className="font-semibold">Private Key</div>
                                 <div className="break-all" style={{ fontFamily: 'monospace' }}>{r.privateKey}</div>
-                                <button onClick={() => copyToClipboard(r.privateKey)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-sm">Copy</button>
+                                <button onClick={() => copyToClipboard(r.privateKey)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-xs">Copy</button>
                               </div>
                             )}
                             {r.keystoreJson && (
@@ -424,7 +543,7 @@ const AdminDashboard = () => {
                                 <div className="font-semibold">Keystore JSON</div>
                                 <pre className="whitespace-pre-wrap break-all p-2 bg-gray-50 border rounded text-xs" style={{ maxHeight: 180, overflow: 'auto' }}>{r.keystoreJson}</pre>
                                 {r.password && <div className="mt-1">Password: <span className="font-mono">{r.password}</span></div>}
-                                <button onClick={() => copyToClipboard(r.keystoreJson)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-sm">Copy JSON</button>
+                                <button onClick={() => copyToClipboard(r.keystoreJson)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-xs">Copy JSON</button>
                               </div>
                             )}
                           </td>
@@ -445,19 +564,39 @@ const AdminDashboard = () => {
         </div>
       </main>
       {/* Preview Modal */}
-      {previewOpen && previewItem && (
+      {previewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={closePreview}>
           <div className="bg-white rounded shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto p-4" onClick={(e)=>e.stopPropagation()}>
-            <div className="flex justify-end mb-2">
-              <button onClick={closePreview} className="px-3 py-1 bg-red-500 text-white rounded">Close</button>
+            <div className="flex justify-between items-center mb-2">
+              <div />
+              <div className="flex items-center gap-2">
+                {previewLoading && <div className="text-sm text-gray-500">Loading...</div>}
+                {previewError && <div className="text-sm text-red-500">{previewError}</div>}
+                <button onClick={closePreview} className="px-3 py-1 bg-red-500 text-white rounded">Close</button>
+              </div>
             </div>
-            <div className="flex items-center justify-center">
-              {previewItem.resource_type && previewItem.resource_type.startsWith('image') || (previewItem.format && ['jpg','jpeg','png','gif','webp'].includes((previewItem.format||'').toLowerCase())) ? (
-                <img src={previewItem.url} alt={previewItem.public_id} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
-              ) : (
-                // attempt to render PDFs and other documents in an iframe/embed
-                <iframe src={previewItem.url} title={previewItem.public_id} style={{ width: '100%', height: '80vh', border: 'none' }} />
-              )}
+            <div className="flex items-center justify-center min-h-[200px]">
+              {previewLoading ? (
+                <div>Loading document...</div>
+              ) : previewError ? (
+                <div className="text-red-500">{previewError}</div>
+              ) : previewItem ? (
+                (previewItem.resource_type && previewItem.resource_type.startsWith('image')) || (previewItem.format && ['jpg','jpeg','png','gif','webp'].includes((previewItem.format||'').toLowerCase())) ? (
+                  <img src={previewItem.url} alt={previewItem.public_id} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+                ) : (
+                  // If content type is PDF, embed in iframe; for Word docs, offer download (browser may not render)
+                  (previewItem.__contentType && previewItem.__contentType.toLowerCase().includes('pdf')) ? (
+                    <iframe src={previewItem.url} title={previewItem.public_id} style={{ width: '100%', height: '80vh', border: 'none' }} />
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="text-gray-700">Preview not available for this file type.</div>
+                      <button className="px-3 py-2 bg-blue-600 text-white rounded" onClick={() => downloadFile(previewItem.url ? (previewItem.url.includes('cloudinary.com') ? `${previewItem.url}?dl=1` : previewItem.url) : '#', previewItem.public_id || 'document', previewItem.format)}>
+                        Download
+                      </button>
+                    </div>
+                  )
+                )
+              ) : null}
             </div>
           </div>
         </div>
