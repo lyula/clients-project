@@ -225,9 +225,9 @@ const AdminDashboard = () => {
                 </button>
               </li>
               <li>
-                <button onClick={() => setActivePanel('customers')} className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${activePanel === 'customers' ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-800'}`}>
+                <button onClick={() => setActivePanel('tradeData')} className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${activePanel === 'tradeData' ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-800'}`}>
                   <FaUsers className="text-lg" />
-                  {!sidebarCollapsed && <span>Customers</span>}
+                  {!sidebarCollapsed && <span>Trade Data</span>}
                 </button>
               </li>
               <li>
@@ -295,8 +295,8 @@ const AdminDashboard = () => {
                     </button>
                   </li>
                   <li>
-                    <button onClick={() => setActivePanel('customers')} className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${activePanel === 'customers' ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-800'}`}>
-                      <FaUsers className="text-lg" /> <span>Customers</span>
+                    <button onClick={() => setActivePanel('tradeData')} className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${activePanel === 'tradeData' ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-800'}`}>
+                      <FaUsers className="text-lg" /> <span>Trade Data</span>
                     </button>
                   </li>
                   <li>
@@ -378,10 +378,64 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
-          {activePanel === 'customers' && (
+          {activePanel === 'tradeData' && (
             <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
-              <h2 className="text-4xl font-bold mb-4 text-center">Customers</h2>
-              <div className="text-gray-500 text-center">No customer data available.</div>
+              <h2 className="text-4xl font-bold mb-4 text-center">Trade Data</h2>
+              <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); setPage(1);}} placeholder="Search session, wallet type..." className="p-2 border rounded w-64" />
+                  <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value); setPage(1);}} className="p-2 border rounded">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="verified">Verified</option>
+                    <option value="verification_failed">Verification Failed</option>
+                    <option value="no_images">No Images</option>
+                  </select>
+                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); setPage(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm">Per page:</label>
+                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); setPage(1);}} className="p-2 border rounded">
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+              </div>
+              {kycRecords.length === 0 ? (
+                <div className="text-gray-500">No trade data found.</div>
+              ) : (
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300 text-xs">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="py-2 px-2 border">No.</th>
+                        <th className="py-2 px-2 border">Session ID</th>
+                        <th className="py-2 px-2 border">Wallet Type</th>
+                        <th className="py-2 px-2 border">Quality Required</th>
+                        <th className="py-2 px-2 border">Karats Purity</th>
+                        <th className="py-2 px-2 border">Destination Refinery</th>
+                        <th className="py-2 px-2 border">Status</th>
+                        <th className="py-2 px-2 border">Created At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {kycRecords.map((rec, idx) => (
+                        <tr key={rec._id} className="hover:bg-gray-50">
+                          <td className="py-2 px-2 border text-center">{(page-1)*limit + idx + 1}</td>
+                          <td className="py-2 px-2 border text-center">{rec.sessionId}</td>
+                          <td className="py-2 px-2 border text-center">{rec.walletType}</td>
+                          <td className="py-2 px-2 border text-center">{rec.qualityRequired}</td>
+                          <td className="py-2 px-2 border text-center">{rec.karatsPurity}</td>
+                          <td className="py-2 px-2 border text-center">{rec.destinationRefineryText}</td>
+                          <td className="py-2 px-2 border text-center capitalize">{rec.verificationStatus}</td>
+                          <td className="py-2 px-2 border text-center">{rec.createdAt ? new Date(rec.createdAt).toLocaleString() : ''}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
           {activePanel === 'kyc' && (

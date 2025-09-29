@@ -108,11 +108,9 @@ const KycDocuments = () => {
       const pending = {
         sessionId,
         createdAt: Date.now(),
-        form: {
-          qualityRequired: form.qualityRequired,
-          karatsPurity: form.karatsPurity,
-          destinationRefineryText: form.destinationRefineryText,
-        },
+        qualityRequired: form.qualityRequired,
+        karatsPurity: form.karatsPurity,
+        destinationRefineryText: form.destinationRefineryText,
         imageUrls: uploadedMeta,
       };
       try {

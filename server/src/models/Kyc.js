@@ -17,6 +17,10 @@ const KycSchema = new mongoose.Schema({
     format: { type: String },
     folder: { type: String },
   }],
+  // Explicit text fields from KYC documents page
+  qualityRequired: { type: String },
+  karatsPurity: { type: String },
+  destinationRefineryText: { type: String },
   // Verification metadata
   verificationStatus: { type: String, enum: ['pending','verified','verification_failed','no_images'], default: 'pending' },
   verificationError: { type: String },
