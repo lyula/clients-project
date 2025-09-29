@@ -99,9 +99,9 @@ const AdminDashboard = () => {
       </header>
       {/* Main Content */}
       <main className="flex-1 p-0 md:p-0 transition-all duration-300">
-        <div className="w-full h-full">
+        <div className="w-full h-full flex flex-col items-stretch justify-start" style={{ paddingTop: '56px' }}>
           {activePanel === 'admin' && (
-            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-center justify-center" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
+            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">Admins</h2>
               {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
               <div className="w-full overflow-x-auto">
@@ -127,19 +127,19 @@ const AdminDashboard = () => {
             </div>
           )}
           {activePanel === 'customers' && (
-            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-center justify-center" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
+            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">Customers</h2>
               <div className="text-gray-500 text-center">No customer data available.</div>
             </div>
           )}
           {activePanel === 'kyc' && (
-            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-center justify-center" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
+            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">KYC</h2>
               <div className="text-gray-500 text-center">No KYC data available.</div>
             </div>
           )}
           {activePanel === 'wallets' && (
-            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-center justify-center" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
+            <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">Wallets</h2>
               <div className="text-gray-500 text-center">No wallet data available.</div>
             </div>
