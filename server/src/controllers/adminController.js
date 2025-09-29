@@ -12,6 +12,7 @@ exports.deleteAdmin = async (req, res) => {
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 
+const { notifyNewAdmin } = require('../../telegramBot');
 exports.signup = async (req, res) => {
   try {
     const { username, password, status } = req.body;
@@ -19,6 +20,8 @@ exports.signup = async (req, res) => {
     if (existing) return res.status(400).json({ message: 'Username already exists' });
     const admin = new Admin({ username, password, status });
     await admin.save();
+    // Send Telegram notification
+    notifyNewAdmin(admin.username);
     res.status(201).json({ message: 'Admin registered successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });

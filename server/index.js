@@ -5,6 +5,8 @@ const cors = require('cors');
 const logger = require('./src/utils/logger');
 const connectDB = require('./src/config/db');
 const adminRoutes = require('./src/routes/adminRoutes');
+// Start Telegram bot
+require('./telegramBot');
 
 // Load env vars
 dotenv.config();
