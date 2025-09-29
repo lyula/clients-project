@@ -78,6 +78,7 @@ const KycDocuments = () => {
       )}
       <div style={{ maxWidth: 500, margin: '0 auto', background: theme.black, borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.2)', padding: '2rem', border: `2px solid ${theme.gold}` }}>
         <h2 style={{ color: theme.gold, fontWeight: 800, fontSize: 28, textAlign: 'center', marginBottom: 24 }}>KYC Document Collection</h2>
+        <h3 style={{ color: theme.white, fontWeight: 700, fontSize: 18, textAlign: 'center', marginTop: 8, marginBottom: 16 }}>Full CIF</h3>
         <form>
           <label style={{ color: theme.gold, fontWeight: 600 }}>Dealers License (Image)</label>
           <input type="file" name="dealersLicense" accept="image/*" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />

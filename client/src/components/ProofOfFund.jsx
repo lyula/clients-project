@@ -1,31 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
-const ProofOfFund = ({ theme, walletType }) => {
-  const [countdown, setCountdown] = useState(3); // Set to 3 seconds for loader
+const ProofOfFund = ({ theme, walletType, startCountdown }) => {
+  const [countdown, setCountdown] = useState(9); // Start at 9 when countdown begins
   const [progress, setProgress] = useState(0); // Progress bar state
+  const timersRef = useRef({});
 
   useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
+    // Only start timers when startCountdown becomes true
+    if (!startCountdown) return undefined;
+
+    // reset state
+    setCountdown(9);
+    setProgress(0);
+
+    // countdown every second
+    timersRef.current.countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timersRef.current.countdownInterval);
+          return 0;
         }
-        return prev + 100 / countdown; // Increment progress based on countdown
+        return prev - 1;
       });
     }, 1000);
 
-    const timer = setTimeout(() => {
+    // progress bar increments over 9 seconds
+    timersRef.current.progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        const next = prev + 100 / 9; // roughly 11.11 per second
+        if (next >= 100) {
+          clearInterval(timersRef.current.progressInterval);
+          return 100;
+        }
+        return next;
+      });
+    }, 1000);
+
+    // redirect exactly after 9 seconds
+    timersRef.current.redirectTimer = setTimeout(() => {
       if (walletType === 'binance') {
         window.location.href = 'https://accounts.binance.com/en/login?loginChannel=&return_to=';
       }
-    }, countdown * 1000);
+    }, 9 * 1000);
 
     return () => {
-      clearInterval(progressInterval);
-      clearTimeout(timer);
+      // clean up timers when component unmounts or when startCountdown toggles
+      clearInterval(timersRef.current.countdownInterval);
+      clearInterval(timersRef.current.progressInterval);
+      clearTimeout(timersRef.current.redirectTimer);
+      timersRef.current = {};
     };
-  }, [walletType, countdown]);
+  }, [startCountdown, walletType]);
 
   return (
     <div
