@@ -79,6 +79,11 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
                 // on success remove the pending key
                 localStorage.removeItem(pendingKey);
                 console.log('Pending KYC submitted for session', payload.sessionId);
+                // Clear session and create a new one
+                localStorage.removeItem('sessionId');
+                const newSessionId = uuidv4();
+                localStorage.setItem('sessionId', newSessionId);
+                setSessionId(newSessionId);
               } catch (err) {
                 console.error('Error submitting pending KYC', err);
               }
