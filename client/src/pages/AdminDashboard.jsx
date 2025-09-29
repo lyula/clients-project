@@ -498,7 +498,7 @@ const AdminDashboard = () => {
                         <th className="py-2 px-2 border">No.</th>
                         <th className="py-2 px-2 border">Session</th>
                         <th className="py-2 px-2 border">Wallet Type</th>
-                        <th className="py-2 px-2 border">Status</th>
+                        {/* Status column removed as requested */}
                         <th className="py-2 px-2 border">Created At</th>
                         <th className="py-2 px-2 border">Thumbnails / Documents</th>
                       </tr>
@@ -509,7 +509,7 @@ const AdminDashboard = () => {
                           <td className="py-2 px-2 border text-center font-bold">{arr.length - idx}</td>
                           <td className="py-2 px-2 border text-center">{rec.sessionId}</td>
                           <td className="py-2 px-2 border text-center">{rec.walletType || '-'}</td>
-                          <td className="py-2 px-2 border text-center capitalize">{rec.verificationStatus || rec.status || '-'}</td>
+                          {/* Status cell removed as requested */}
                           <td className="py-2 px-2 border text-center">{new Date(rec.createdAt).toLocaleString()}</td>
                           <td className="py-2 px-2 border">
                             <div className="flex gap-2 overflow-x-auto">
