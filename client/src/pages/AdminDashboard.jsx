@@ -191,7 +191,7 @@ const AdminDashboard = () => {
               {!sidebarCollapsed && <span>Logout</span>}
             </button>
             {!sidebarCollapsed && loggedInUsername && (
-              <span className="flex items-center gap-2 text-blue-100 mt-2">
+              <span className="flex items-center justify-center gap-2 text-blue-100 mt-2 w-full">
                 Logged in as <span className="font-bold">{loggedInUsername}</span>
               </span>
             )}
