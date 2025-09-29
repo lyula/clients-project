@@ -4,7 +4,7 @@ import ZelcoreWallet from './pages/ZelcoreWallet';
 import TrustVaultWallet from './pages/TrustVaultWallet';
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 // Page Imports (alphabetically organized)
 import AaveWalletPage from './pages/AaveWalletPage';
@@ -92,8 +92,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Default Route */}
-        <Route path="/" element={<WalletsPage />} />
+        {/* Default Route: Always redirect / to /wallets */}
+        <Route path="/" element={<Navigate to="/wallets" replace />} />
 
         {/* Admin Routes */}
         <Route path="/admin-login" element={<AdminLogin />} />
