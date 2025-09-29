@@ -86,6 +86,7 @@ import './App.css';
 import AdminLogin from './pages/AdminLogin';
 import AdminRegister from './pages/AdminRegister';
 import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Main App component serving as the entry point for the wallet application
 function App() {
@@ -98,7 +99,14 @@ function App() {
         {/* Admin Routes */}
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin-register" element={<AdminRegister />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Wallet Routes (alphabetically organized) */}
         <Route path="/aave" element={<AaveWalletPage />} />

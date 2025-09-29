@@ -27,6 +27,17 @@ const AdminLogin = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');
       localStorage.setItem('adminToken', data.token);
+      // Set admin status for ProtectedRoute
+      if (data.admin && data.admin.status === 'super-admin') {
+        localStorage.setItem('isSuperAdmin', 'true');
+        localStorage.removeItem('isAdmin');
+      } else if (data.admin && data.admin.status === 'admin') {
+        localStorage.setItem('isAdmin', 'true');
+        localStorage.removeItem('isSuperAdmin');
+      } else {
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('isSuperAdmin');
+      }
       window.location.href = '/admin-dashboard';
     } catch (err) {
       setError(err.message);
