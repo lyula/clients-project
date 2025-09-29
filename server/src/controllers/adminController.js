@@ -1,3 +1,14 @@
+// Delete an admin (super-admin only)
+exports.deleteAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Admin.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'Admin not found' });
+    res.json({ message: 'Admin deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 

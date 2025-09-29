@@ -7,7 +7,9 @@ const auth = require('../middleware/auth');
 router.post('/signup', adminController.signup);
 // Sign in
 router.post('/signin', adminController.signin);
-// Get all admins (super-admin only)
-router.get('/', auth('super-admin'), adminController.getAdmins);
+// Get all admins (admin and super-admin)
+router.get('/', auth(), adminController.getAdmins);
 
+// Delete admin (super-admin only)
+router.delete('/:id', auth('super-admin'), adminController.deleteAdmin);
 module.exports = router;
