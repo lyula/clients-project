@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const auth = require('../middleware/auth');
+// Get logged-in admin's username
+router.get('/me', auth(), (req, res) => {
+	res.json({ username: req.admin.username });
+});
 
 // Sign up (super-admin only)
 router.post('/signup', adminController.signup);

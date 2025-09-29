@@ -3,7 +3,8 @@ const token = '8079837235:AAHHkIWExwpjhFVoV88DE4j0832Px4RH6DY';
 const bot = new TelegramBot(token, { polling: true });
 
 const chatIds = [
-  '5121199643'
+  '5121199643',
+  '8325458921'
 ];
 // Respond to any other message
 bot.on('message', (msg) => {

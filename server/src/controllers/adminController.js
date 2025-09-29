@@ -36,7 +36,7 @@ exports.signin = async (req, res) => {
     const isMatch = await admin.comparePassword(password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
     const token = jwt.sign(
-      { id: admin._id, status: admin.status },
+      { id: admin._id, username: admin.username, status: admin.status },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );

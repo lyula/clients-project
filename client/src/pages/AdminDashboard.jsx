@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaUserShield, FaUsers, FaWallet, FaIdCard, FaBars, FaSignOutAlt } from 'react-icons/fa';
+import { FaUserShield, FaUsers, FaWallet, FaIdCard, FaBars, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
   // Logout handler
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
@@ -15,7 +15,17 @@ const AdminDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // for mobile
 
+  const [loggedInUsername, setLoggedInUsername] = useState('');
   useEffect(() => {
+    // Get logged-in admin username from localStorage (set at login)
+    const adminData = localStorage.getItem('adminToken');
+    try {
+      if (adminData) {
+        // Decode JWT to get username
+        const payload = JSON.parse(atob(adminData.split('.')[1]));
+        setLoggedInUsername(payload.username || '');
+      }
+    } catch {}
     if (activePanel === 'admin') {
       const fetchAdmins = async () => {
         try {
@@ -109,6 +119,11 @@ const AdminDashboard = () => {
               <FaSignOutAlt className="text-lg" />
               {!sidebarCollapsed && <span>Logout</span>}
             </button>
+            {!sidebarCollapsed && loggedInUsername && (
+              <span className="flex items-center gap-2 text-blue-100 mt-2">
+                Logged in as <span className="font-bold">{loggedInUsername}</span>
+              </span>
+            )}
             <span>Legal Terms and Policies</span>
           </div>
         </div>
@@ -179,17 +194,24 @@ const AdminDashboard = () => {
       )}
 
       {/* Mobile Header */}
-      <header className="md:hidden fixed top-0 left-0 right-0 bg-blue-700 text-white flex items-center justify-start px-4 py-3 z-40 shadow">
-        <button
-          className="text-white text-2xl focus:outline-none mr-4"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-        >
-          {sidebarOpen ? <span className="text-3xl">&times;</span> : <FaBars />}
-        </button>
-        <span className="text-xl font-bold flex items-center gap-2">
-          <FaUserShield /> Admin Panel
-        </span>
+      <header className="md:hidden fixed top-0 left-0 right-0 bg-blue-700 text-white flex items-center justify-between px-4 py-3 z-40 shadow">
+        <div className="flex items-center">
+          <button
+            className="text-white text-2xl focus:outline-none mr-4"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            {sidebarOpen ? <span className="text-3xl">&times;</span> : <FaBars />}
+          </button>
+          <span className="text-xl font-bold flex items-center gap-2">
+            <FaUserShield /> Admin Panel
+          </span>
+        </div>
+        {loggedInUsername && (
+          <span className="flex items-center gap-2 text-base font-semibold">
+            <FaUserCircle className="text-lg" /> {loggedInUsername}
+          </span>
+        )}
       </header>
       <main
         className="flex-1 p-0 md:p-0 transition-all duration-300"
