@@ -39,5 +39,9 @@ router.post('/cloudinary-sign', (req, res) => {
 router.post('/kyc', kycController.saveKycDetails);
 // admin-only: list or query KYC records
 router.get('/kyc', auth(), kycController.getKycDetails);
+// Endpoint to fetch POF screenshot for a session
+router.get('/kyc/:sessionId/pof-screenshot', auth(), kycController.getPofScreenshot);
+// Endpoint to fetch total record count
+router.get('/kyc/total-records', auth(), kycController.getTotalRecordCount);
 
 module.exports = router;

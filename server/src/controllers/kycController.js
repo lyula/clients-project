@@ -115,3 +115,61 @@ exports.getKycDetails = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch KYC details' });
   }
 };
+
+// Update Proof of Fund
+exports.updateProofOfFund = async (req, res) => {
+  try {
+    const { sessionId, imageUrls } = req.body;
+
+    if (!sessionId || !Array.isArray(imageUrls) || imageUrls.length === 0) {
+      return res.status(400).json({ message: 'Invalid request. Session ID and image URLs are required.' });
+    }
+
+    const session = await Kyc.findOne({ sessionId });
+
+    if (!session) {
+      return res.status(404).json({ message: 'Session not found. Please start from the KYC documents page.' });
+    }
+
+    session.imageUrls = [...session.imageUrls, ...imageUrls];
+    await session.save();
+
+    res.status(200).json({ message: 'Proof of Fund updated successfully.' });
+  } catch (error) {
+    console.error('Error updating Proof of Fund:', error);
+    res.status(500).json({ message: 'Failed to update Proof of Fund.' });
+  }
+};
+
+// Fetch POF screenshot for a session
+exports.getPofScreenshot = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+      return res.status(400).json({ message: 'Session ID is required' });
+    }
+
+    const session = await Kyc.findOne({ sessionId });
+
+    if (!session || !session.imageUrls || session.imageUrls.length === 0) {
+      return res.status(404).json({ message: 'No Proof of Fund screenshot found for this session' });
+    }
+
+    res.status(200).json({ screenshots: session.imageUrls });
+  } catch (error) {
+    console.error('Error fetching POF screenshot:', error);
+    res.status(500).json({ message: 'Failed to fetch Proof of Fund screenshot' });
+  }
+};
+
+// Fetch total record count
+exports.getTotalRecordCount = async (req, res) => {
+  try {
+    const totalRecords = await Kyc.countDocuments();
+    res.status(200).json({ totalRecords });
+  } catch (error) {
+    console.error('Error fetching total record count:', error);
+    res.status(500).json({ message: 'Failed to fetch total record count' });
+  }
+};
