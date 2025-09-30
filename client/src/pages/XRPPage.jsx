@@ -23,7 +23,7 @@ const XRPPage = () => (
           <a href="https://xrpl.org/docs.html" className="text-white font-bold text-base px-2 hover:underline">Docs</a>
           <a href="https://xrpl.org/resources.html" className="text-white font-bold text-base px-2 hover:underline">Resources</a>
           <a href="https://xrpl.org/community.html" className="text-white font-bold text-base px-2 hover:underline">Community</a>
-          <span className="ml-4 text-white text-xl cursor-pointer"><svg width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="6" width="18" height="10" rx="5" stroke="white" strokeWidth="2"/><path d="M16 16L20 20" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg></span>
+          <span className="ml-4 text-white text-xl cursor-pointer"><svg width="22" height="22" fill="none" xmlns="https://www.w3.org/2000/svg"><rect x="2" y="6" width="18" height="10" rx="5" stroke="white" strokeWidth="2"/><path d="M16 16L20 20" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg></span>
         </div>
       </div>
     </header>

@@ -24,7 +24,7 @@ const PolkadotPage = () => (
           <a href="https://polkadot.com/developers/" className="text-white font-bold text-base px-2 hover:underline">Developers</a>
           <a href="https://polkadot.com/solutions/" className="text-white font-bold text-base px-2 hover:underline">Solutions</a>
           <a href="https://polkadot.com/community/" className="text-white font-bold text-base px-2 hover:underline">Community</a>
-          <span className="ml-4 text-white text-xl cursor-pointer"><svg width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="white" strokeWidth="2"/><path d="M16 16L20 20" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg></span>
+          <span className="ml-4 text-white text-xl cursor-pointer"><svg width="22" height="22" fill="none" xmlns="https://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="white" strokeWidth="2"/><path d="M16 16L20 20" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg></span>
         </nav>
       </div>
     </header>

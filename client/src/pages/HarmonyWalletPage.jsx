@@ -46,11 +46,11 @@ export default function HarmonyWalletPage() {
             </p>
             <div className="flex flex-row items-center gap-6 mb-8">
               <span className="flex items-center gap-2 text-[#00aee9] text-base md:text-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 12v.01" /></svg>
+                <svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2h2" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 12v.01" /></svg>
                 Mobile & Desktop App
               </span>
               <span className="flex items-center gap-2 text-[#00aee9] text-base md:text-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 11V7a4 4 0 10-8 0v4" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 118 0v4" /></svg>
+                <svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 11V7a4 4 0 10-8 0v4" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 118 0v4" /></svg>
                 Secured by Hardware Wallet
               </span>
             </div>
