@@ -54,9 +54,9 @@ const contributors = [
   }
 ];
 
-import discordSvg from '../assets/discord.svg';
-import xLogo from '../assets/x.svg';
-import githubSvg from '../assets/github.svg';
+import discordSvg from '../assets/images/discord-logo.png';
+import xLogo from '../assets/images/x-logo.png';
+import githubSvg from '../assets/images/github-logo.png';
 
 const socials = [
   {

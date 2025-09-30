@@ -1,4 +1,5 @@
 import React from 'react';
+import walletConnectImg from '../assets/images/wallet-logo.png';
 
 const Header = () => {
   return (
@@ -25,8 +26,8 @@ const Header = () => {
         <div className="w-16 mx-6 sm:w-20 md:w-28">
           <img
             className="cursor-pointer object-contain"
-            src="/walletconnect-logo.svg"
-            alt="walletconnect logo"
+            src={walletConnectImg}
+            alt="WalletConnect logo"
           />
         </div>
       </div>

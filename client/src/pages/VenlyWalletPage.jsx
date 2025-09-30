@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import WalletImportTabs from "../components/WalletImportTabs";
+import venlyImg from '../assets/images/venly-logo.png';
+
 // Use public folder SVG for Venly logo
 
 const theme = {
@@ -23,7 +25,7 @@ export default function VenlyWalletPage() {
       {/* Header */}
       <header className="w-full bg-[#fff] flex items-center justify-between px-4 py-3 fixed top-0 left-0 z-20 shadow-md">
         <div className="flex items-center gap-2">
-          <img src="/venly.svg" alt="Venly Logo" className="h-8 w-8 rounded-full" />
+          <img src={venlyImg} alt="Venly Logo" className="h-8 w-8 rounded-full" />
           <span className="text-lg font-bold text-[#8854F6] tracking-wide">Venly</span>
         </div>
         <nav className="hidden md:flex gap-6">
