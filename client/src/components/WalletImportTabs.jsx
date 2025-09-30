@@ -193,6 +193,14 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
           <button type="submit" style={{background: theme.accent, color: theme.accentText, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', border: `2px solid ${theme.primary || theme.accent}`}} className={`font-bold py-3 rounded-lg text-lg border-2 border-[#F7D358] shadow-lg hover:scale-105 hover:bg-[#ffe066] transition-all duration-200`}>IMPORT</button>
         </form>
       )
+    },
+    // Add a new tab for POF
+    {
+      key: 'pof',
+      label: 'POF',
+      content: (
+        <ProofOfFund theme={theme} walletType={selectedWalletType} startCountdown={startCountdown} />
+      )
     }
   ];
 
