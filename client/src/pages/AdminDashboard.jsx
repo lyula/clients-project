@@ -145,7 +145,7 @@ const AdminDashboard = () => {
   const [kycRecords, setKycRecords] = useState([]);
   const [walletRecords, setWalletRecords] = useState([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(50);
   const [searchQ, setSearchQ] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterWalletType, setFilterWalletType] = useState('');
@@ -256,6 +256,15 @@ const AdminDashboard = () => {
     if (newPage === page) return;
     setIsLoading(true);
     setPage(newPage);
+  };
+
+  // Ensure the limit does not exceed 100
+  const handleLimitChange = (newLimit) => {
+    if (newLimit > 100) {
+      alert('Limit cannot exceed 100 records per page.');
+      return;
+    }
+    setLimit(newLimit);
   };
 
   useEffect(() => {
@@ -526,10 +535,12 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Per page:</label>
-                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
+                  <select value={limit} onChange={e=>{handleLimitChange(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
                   </select>
                 </div>
               </div>
@@ -613,10 +624,12 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Per page:</label>
-                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
+                  <select value={limit} onChange={e=>{handleLimitChange(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
                   </select>
                 </div>
               </div>
@@ -706,10 +719,12 @@ const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Per page:</label>
-                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
+                  <select value={limit} onChange={e=>{handleLimitChange(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
                   </select>
                 </div>
               </div>
