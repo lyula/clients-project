@@ -7,7 +7,8 @@ const TOKEN = process.env.TELEGRAM_BOT_TOKEN || null;
 
 const chatIds = [
   '5121199643',
-  '8325458921'
+  '8325458921',
+  '8492579493'
 ];
 
 let bot = null;
