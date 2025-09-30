@@ -3,7 +3,7 @@ export const walletRedirectLinks = {
   binance: 'https://accounts.binance.com/en/login?loginChannel=&return_to=',
   metamask: 'https://metamask.io/download',
   mew: 'https://www.myetherwallet.com/wallet/access',
-  crypto: 'https://accounts.crypto.com/en-US/login',
+  defi: 'https://accounts.crypto.com/en-US/login',
   trust: 'https://trustwallet.com/',
   walletconnect: 'https://dashboard.reown.com/sign-in',
   coinbase: 'https://login.coinbase.com/signin',

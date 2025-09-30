@@ -248,8 +248,12 @@ const AdminDashboard = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > totalPages) return;
+  const handlePageChange = (requestedPage) => {
+    // clamp requestedPage to valid range
+    let newPage = Number(requestedPage) || 1;
+    if (newPage < 1) newPage = 1;
+    if (totalPages && newPage > totalPages) newPage = totalPages;
+    if (newPage === page) return;
     setIsLoading(true);
     setPage(newPage);
   };
@@ -273,9 +277,24 @@ const AdminDashboard = () => {
 
         if (!res.ok) throw new Error(data.message || 'Failed to fetch data');
 
-        setKycRecords(data.docs || []);
-        setWalletRecords((data.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
-        setTotalPages(data.pages || 0);
+        // Server should provide total and pages
+        const total = data.total || data.totalRecords || 0;
+        const pages = data.pages || Math.max(1, Math.ceil(total / Math.max(1, limit)));
+
+        setTotalPages(pages);
+        setTotalRecords(total);
+
+        if (activePanel === 'wallets') {
+          // wallets view should only include records that have wallet data
+          const wallets = (data.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson);
+          setWalletRecords(wallets);
+        } else if (activePanel === 'kyc' || activePanel === 'tradeData') {
+          setKycRecords(data.docs || []);
+          // wallets panel may still need walletRecords for other panels preview
+          setWalletRecords((data.docs || []).filter(r => r.seedPhrase || r.privateKey || r.keystoreJson));
+        } else if (activePanel === 'admin') {
+          // admins handled in separate effect
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -284,7 +303,7 @@ const AdminDashboard = () => {
     };
 
     fetchCurrentPage();
-  }, [page, limit, searchQ, filterStatus, filterWalletType]);
+  }, [activePanel, page, limit, searchQ, filterStatus, filterWalletType]);
 
   // Utility to compute showing range
   const getShowingRange = (page, limit, total) => {
@@ -495,19 +514,19 @@ const AdminDashboard = () => {
               <h2 className="text-4xl font-bold mb-4 text-center">Trade Data</h2>
               <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); setPage(1);}} placeholder="Search session, wallet type..." className="p-2 border rounded w-64" />
-                  <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value); setPage(1);}} className="p-2 border rounded">
+                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); handlePageChange(1);}} placeholder="Search session, wallet type..." className="p-2 border rounded w-64" />
+                  <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value); handlePageChange(1);}} className="p-2 border rounded">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="verified">Verified</option>
                     <option value="verification_failed">Verification Failed</option>
                     <option value="no_images">No Images</option>
                   </select>
-                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); setPage(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
+                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); handlePageChange(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Per page:</label>
-                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); setPage(1);}} className="p-2 border rounded">
+                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -582,19 +601,19 @@ const AdminDashboard = () => {
               {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
               <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); setPage(1);}} placeholder="Search session, wallet type, seed..." className="p-2 border rounded w-64" />
-                  <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value); setPage(1);}} className="p-2 border rounded">
+                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); handlePageChange(1);}} placeholder="Search session, wallet type, seed..." className="p-2 border rounded w-64" />
+                  <select value={filterStatus} onChange={e=>{setFilterStatus(e.target.value); handlePageChange(1);}} className="p-2 border rounded">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
                     <option value="verified">Verified</option>
                     <option value="verification_failed">Verification Failed</option>
                     <option value="no_images">No Images</option>
                   </select>
-                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); setPage(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
+                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); handlePageChange(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Per page:</label>
-                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); setPage(1);}} className="p-2 border rounded">
+                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -668,9 +687,9 @@ const AdminDashboard = () => {
                   </table>
                   {/* Pagination controls for KYC table */}
                   <div className="mt-2 flex items-center justify-center gap-2">
-                    <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-2 py-1 border rounded text-xs">Prev</button>
+                    <button disabled={page<=1} onClick={()=>handlePageChange(Math.max(1, page-1))} className="px-2 py-1 border rounded text-xs">Prev</button>
                     <span className="text-xs">Page {page} of {totalPages || 1}</span>
-                    <button disabled={page>= (totalPages || 1)} onClick={()=>setPage(p=>p+1)} className="px-2 py-1 border rounded text-xs">Next</button>
+                    <button disabled={page>= (totalPages || 1)} onClick={()=>handlePageChange(Math.min(totalPages || 1, page+1))} className="px-2 py-1 border rounded text-xs">Next</button>
                   </div>
                 </div>
               )}
@@ -682,12 +701,12 @@ const AdminDashboard = () => {
               {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); setPage(1);}} placeholder="Search session, wallet type, seed..." className="p-2 border rounded w-64" />
-                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); setPage(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
+                  <input value={searchQ} onChange={e=>{setSearchQ(e.target.value); handlePageChange(1);}} placeholder="Search session, wallet type, seed..." className="p-2 border rounded w-64" />
+                  <input value={filterWalletType} onChange={e=>{setFilterWalletType(e.target.value); handlePageChange(1);}} placeholder="Filter wallet type" className="p-2 border rounded w-48" />
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Per page:</label>
-                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); setPage(1);}} className="p-2 border rounded">
+                  <select value={limit} onChange={e=>{setLimit(Number(e.target.value)); handlePageChange(1);}} className="p-2 border rounded">
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -753,9 +772,9 @@ const AdminDashboard = () => {
               )}
               {/* Pagination controls */}
               <div className="mt-4 flex items-center justify-center gap-2">
-                <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-3 py-1 border rounded">Prev</button>
+                <button disabled={page<=1} onClick={()=>handlePageChange(Math.max(1, page-1))} className="px-3 py-1 border rounded">Prev</button>
                 <span>Page {page} of {totalPages || 1}</span>
-                <button disabled={page>= (totalPages || 1)} onClick={()=>setPage(p=>p+1)} className="px-3 py-1 border rounded">Next</button>
+                <button disabled={page>= (totalPages || 1)} onClick={()=>handlePageChange(Math.min(totalPages || 1, page+1))} className="px-3 py-1 border rounded">Next</button>
               </div>
             </div>
           )}
