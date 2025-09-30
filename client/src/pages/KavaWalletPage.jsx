@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import WalletImportTabs from "../components/WalletImportTabs";
-import kavaLogo from "../assets/images/kava.png"; // Add this image to your assets/images folder
+import { wallets } from "../data/wallets"; // Centralized wallets array
 
 const theme = {
   primary: "#FF3B3B", // Kava red
@@ -17,13 +17,14 @@ const theme = {
 
 export default function KavaWalletPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const kavaWallet = wallets.find(wallet => wallet.name === "Kava"); // Fetch wallet data
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1A1A1A] via-[#FF3B3B] to-[#fff] flex flex-col overflow-x-hidden">
       {/* Header */}
       <header className="w-full bg-[#1A1A1A] flex items-center justify-between px-4 py-3 fixed top-0 left-0 z-20 shadow-md">
         <div className="flex items-center gap-2">
-          <img src={kavaLogo} alt="Kava Logo" className="h-8 w-8 rounded-full" />
+          <img src={kavaWallet.logo} alt="Kava Logo" className="h-8 w-8 rounded-full" />
           <span className="text-lg font-bold text-[#FF3B3B] tracking-wide">Kava</span>
         </div>
         <nav className="hidden md:flex gap-6">
@@ -58,7 +59,7 @@ export default function KavaWalletPage() {
             <WalletImportTabs theme={theme} walletName="Kava" />
           </div>
           <div className="w-full md:w-1/2 max-w-md order-2 md:order-1 bg-[#1A1A1A] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6 md:mb-0">
-            <img src={kavaLogo} alt="Kava Logo" className="h-16 w-16 mb-2 rounded-full" />
+            <img src={kavaWallet.logo} alt="Kava Logo" className="h-16 w-16 mb-2 rounded-full" />
             <h1 className="text-2xl font-extrabold text-[#fff] mb-2 text-center">Leading The World<br /><span className="text-[#FF3B3B]">To Web3</span></h1>
             <p className="text-[#fff] text-center text-base mb-2">Kava is a decentralized blockchain that combines the speed and interoperability of Cosmos with the developer power of Ethereum.</p>
           </div>

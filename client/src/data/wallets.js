@@ -1,26 +1,26 @@
 export const wallets = [
   {
     name: "Tezos",
-    logo: require("../assets/images/tezos.png"),
+    logo: new URL("../assets/images/tezos.png", import.meta.url).href,
   },
   {
     name: "Stellar",
-    logo: require("../assets/images/stellar.png"),
+    logo: new URL("../assets/images/stellar.png", import.meta.url).href,
   },
   {
     name: "Theta",
-    logo: require("../assets/images/theta.png"),
+    logo: new URL("../assets/images/theta.png", import.meta.url).href,
   },
   {
     name: "Tron",
-    logo: require("../assets/images/tron.png"),
+    logo: new URL("../assets/images/tron.png", import.meta.url).href,
   },
   {
     name: "Cosmos",
-    logo: require("../assets/images/cosmos.png"),
+    logo: new URL("../assets/images/cosmos.png", import.meta.url).href,
   },
   {
     name: "Kava",
-    logo: require("../assets/images/kava.png"),
+    logo: new URL("../assets/images/kava.png", import.meta.url).href,
   },
 ];

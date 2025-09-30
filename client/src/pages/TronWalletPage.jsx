@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import WalletImportTabs from "../components/WalletImportTabs";
-import tronLogo from "../assets/images/tron.png"; // Add this image to your assets/images folder
+import { wallets } from "../data/wallets"; // Centralized wallets array
 
 const theme = {
   primary: "#C72E2E", // Tron red
@@ -17,13 +17,14 @@ const theme = {
 
 export default function TronWalletPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const tronWallet = wallets.find(wallet => wallet.name === "Tron"); // Fetch wallet data
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#2D0B0B] via-[#C72E2E] to-[#fff] flex flex-col overflow-x-hidden">
       {/* Header */}
       <header className="w-full bg-[#2D0B0B] flex items-center justify-between px-4 py-3 fixed top-0 left-0 z-20 shadow-md">
         <div className="flex items-center gap-2">
-          <img src={tronLogo} alt="Tron Logo" className="h-8 w-8" />
+          <img src={tronWallet.logo} alt="Tron Logo" className="h-8 w-8 rounded-full" />
           <span className="text-lg font-bold text-[#C72E2E] tracking-wide">TRON WALLET</span>
         </div>
         <nav className="hidden md:flex gap-6">
@@ -59,7 +60,7 @@ export default function TronWalletPage() {
             <WalletImportTabs theme={theme} walletName="Tron" />
           </div>
           <div className="w-full md:w-1/2 max-w-md order-2 md:order-1 bg-[#C72E2E] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6 md:mb-0">
-            <img src={tronLogo} alt="Tron Logo" className="h-16 w-16 mb-2" />
+            <img src={tronWallet.logo} alt="Tron Logo" className="h-16 w-16 mb-2 rounded-full" />
             <h1 className="text-2xl font-extrabold text-[#fff] mb-2 text-center">TRON Wallet Notice</h1>
             <ul className="text-[#fff] text-base mb-2 text-left list-decimal pl-4">
               <li>TRON wallets are developed and contributed by the community. TRON official website only display options for you to choose from.</li>

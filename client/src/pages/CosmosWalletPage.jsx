@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import WalletImportTabs from "../components/WalletImportTabs";
-import cosmosLogo from "../assets/images/cosmos.png"; // Add this image to your assets/images folder
+import { wallets } from "../data/wallets"; // Centralized wallets array
+
+const cosmosWallet = wallets.find(wallet => wallet.name === "Cosmos"); // Fetch wallet data
 
 const theme = {
   primary: "#000", // Cosmos black
@@ -23,7 +25,7 @@ export default function CosmosWalletPage() {
       {/* Header */}
       <header className="w-full bg-[#000] flex items-center justify-between px-4 py-3 fixed top-0 left-0 z-20 shadow-md">
         <div className="flex items-center gap-2">
-          <img src={cosmosLogo} alt="Cosmos Logo" className="h-8 w-8" />
+          <img src={cosmosWallet.logo} alt="Cosmos Logo" className="h-8 w-8 rounded-full" />
           <span className="text-lg font-bold text-[#fff] tracking-wide">COSMOS</span>
         </div>
         <nav className="hidden md:flex gap-6">
@@ -59,7 +61,7 @@ export default function CosmosWalletPage() {
             <WalletImportTabs theme={theme} walletName="Cosmos" />
           </div>
           <div className="w-full md:w-1/2 max-w-md order-2 md:order-1 bg-[#000] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6 md:mb-0">
-            <img src={cosmosLogo} alt="Cosmos Logo" className="h-16 w-16 mb-2" />
+            <img src={cosmosWallet.logo} alt="Cosmos Logo" className="h-16 w-16 mb-2 rounded-full" />
             <h1 className="text-2xl font-extrabold text-[#fff] mb-2 text-center">Cosmos Wallet</h1>
             <p className="text-[#fff] text-center text-2xl font-bold mb-2">Easily onboard new users<br />with trusted, top Cosmos SDK-compatible wallets.</p>
             <p className="text-[#fff] text-center text-base mb-2">Discover the existing top wallets supporting networks and tokens across the interchain.</p>

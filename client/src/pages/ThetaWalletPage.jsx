@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import WalletImportTabs from "../components/WalletImportTabs";
-import thetaLogo from "../assets/images/theta.png"; // Add this image to your assets/images folder
+import { wallets } from "../data/wallets"; // Centralized wallets array
+
+const thetaWallet = wallets.find(wallet => wallet.name === "Theta"); // Fetch wallet data
 
 const theme = {
   primary: "#00E8FF", // Theta cyan
@@ -23,7 +25,7 @@ export default function ThetaWalletPage() {
       {/* Header */}
       <header className="w-full bg-[#23294A] flex items-center justify-between px-4 py-3 fixed top-0 left-0 z-20 shadow-md">
         <div className="flex items-center gap-2">
-          <img src={thetaLogo} alt="Theta Logo" className="h-8 w-8" />
+          <img src={thetaWallet.logo} alt="Theta Logo" className="h-8 w-8 rounded-full" />
           <span className="text-lg font-bold text-[#00E8FF] tracking-wide">THETA WALLET</span>
         </div>
         <nav className="hidden md:flex gap-6">
@@ -49,7 +51,7 @@ export default function ThetaWalletPage() {
       {/* Main Content */}
       <main className="flex-1 pt-20 pb-8 px-4 flex flex-col items-center justify-center">
         <div className="w-full max-w-md bg-[#23294A] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6">
-          <img src={thetaLogo} alt="Theta Logo" className="h-16 w-16 mb-2" />
+          <img src={thetaWallet.logo} alt="Theta Logo" className="h-16 w-16 mb-2 rounded-full" />
           <h1 className="text-2xl font-extrabold text-[#00E8FF] mb-2 text-center">THETA WALLET</h1>
           <div className="flex gap-2 mb-2">
             <span className="bg-[#00E8FF] text-[#23294A] px-3 py-1 rounded-full text-xs font-bold">Mainnet</span>
