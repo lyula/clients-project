@@ -63,7 +63,7 @@ export default function VenlyWalletPage() {
             <WalletImportTabs theme={theme} walletName="Venly" />
           </div>
           <div className="w-full md:w-1/2 max-w-md order-2 md:order-1 bg-[#fff] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6 md:mb-0">
-            <img src="/venly.svg" alt="Venly Logo" className="h-16 w-16 mb-2 rounded-full" />
+            <img src={venlyImg} alt="Venly Logo" className="h-16 w-16 mb-2 rounded-full" />
             <h1 className="text-2xl font-extrabold text-[#8854F6] mb-2 text-center">Easily plug blockchain<br />into your existing infrastructure</h1>
             <p className="text-[#222] text-center text-base mb-2">Adding blockchain to your platform has never been easier.<br />With Venly’s Digital Wallets, NFT & Token APIs, and Venly Payment, you can integrate seamlessly and see instant results – helping your business scale faster than ever.</p>
             <div className="flex gap-4 mt-2">
