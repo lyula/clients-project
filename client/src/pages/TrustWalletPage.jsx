@@ -1,5 +1,6 @@
-
+import React, { useState } from 'react';
 import WalletImportTabs from '../components/WalletImportTabs';
+import { wallets } from '../components/WalletGrid';
 
 const trustTheme = {
   bg: '#fff',
@@ -15,16 +16,16 @@ const trustTheme = {
   tabBorder: '#2970FF',
 };
 
-import React, { useState } from 'react';
-
 const TrustWalletPage = () => {
+  const trustWallet = wallets.find(wallet => wallet.name === 'Trust Wallet');
+
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <div className="min-h-screen flex flex-col" style={{background: trustTheme.bg}}>
       <header className="w-full px-4 py-4 md:px-8 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between relative">
         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
           <div className="flex items-center gap-2 w-full">
-            <img src="/src/assets/images/trustwallet.png" alt="Trust Wallet Logo" className="w-10 h-10" />
+            <img src={trustWallet.image} alt="Trust Wallet Logo" className="w-10 h-10" />
             <span className="text-[#2970FF] font-bold text-2xl tracking-wide">trust</span>
             {/* Hamburger menu for mobile, in same row as logo */}
             <button
