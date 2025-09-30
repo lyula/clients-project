@@ -12,7 +12,7 @@ const adminRoutes = require('./src/routes/adminRoutes');
 
 // Connect to DB
 connectDB();
-
+// Initialize Express
 const app = express();
 
 // Middleware
