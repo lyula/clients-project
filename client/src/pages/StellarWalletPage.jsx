@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import WalletImportTabs from "../components/WalletImportTabs";
-import stellarLogo from "../assets/images/stellar.png"; // Add this image to your assets/images folder
+import { wallets } from "../components/WalletGrid";
 
 const theme = {
   primary: "#F7D358", // Stellar yellow
@@ -10,13 +10,14 @@ const theme = {
 
 export default function StellarWalletPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const stellarWallet = wallets.find((wallet) => wallet.name === "Stellar");
 
   return (
     <div className="min-h-screen bg-[#fff] flex flex-col overflow-x-hidden">
       {/* Header */}
       <header className="w-full bg-[#222] flex items-center justify-between px-4 py-3 fixed top-0 left-0 z-20 shadow-md">
         <div className="flex items-center gap-2">
-          <img src={stellarLogo} alt="Stellar Logo" className="h-8 w-8" />
+          <img src={stellarWallet.image} alt="Stellar Logo" className="h-8 w-8" />
           <span className="text-lg font-bold text-[#F7D358] tracking-wide">Stellar</span>
         </div>
         <nav className="hidden md:flex gap-6">
@@ -46,7 +47,7 @@ export default function StellarWalletPage() {
       {/* Main Content */}
       <main className="flex-1 pt-20 pb-8 px-4 flex flex-col items-center justify-center">
         <div className="w-full max-w-md bg-[#F7D358] rounded-xl shadow-lg p-6 flex flex-col items-center mb-6">
-          <img src={stellarLogo} alt="Stellar Logo" className="h-16 w-16 mb-2" />
+          <img src={stellarWallet.image} alt="Stellar Logo" className="h-16 w-16 mb-2" />
           <h1 className="text-2xl font-extrabold text-[#222] mb-2 text-center">Stellar Wallet</h1>
           <p className="text-[#222] text-center text-base mb-2">Where blockchain meets the real world.</p>
         </div>
