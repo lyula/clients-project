@@ -1,5 +1,6 @@
 import React from 'react';
 import WalletImportTabs from '../components/WalletImportTabs';
+import mewImg from '../assets/images/MEW.png';
 
 const mewTheme = {
   bg: '#F6FBFF', // light blue background
@@ -24,7 +25,7 @@ const MEWPage = () => (
     <header className="w-full px-4 py-4 md:px-8 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between" style={{background: 'transparent'}}>
       <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
         <div className="flex items-center gap-2">
-          <img src="/src/assets/images/MEW.png" alt="MEW Logo" className="w-10 h-10" />
+          <img src={mewImg} alt="MEW Logo" className="w-10 h-10 rounded-full" />
           <span className="text-[#1A355B] font-bold text-2xl tracking-wide">MEW</span>
         </div>
         <nav className="flex gap-4 md:gap-8 md:ml-8 mt-2 md:mt-0">

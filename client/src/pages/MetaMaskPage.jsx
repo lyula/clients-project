@@ -1,13 +1,13 @@
-
 import React from 'react';
 import WalletImportTabs from '../components/WalletImportTabs';
+import metamaskImg from '../assets/images/metamask.png';
 
 const MetaMaskPage = () => (
   <div className="min-h-screen bg-[#FFF5F0] flex flex-col">
     <header className="w-full px-4 py-4 md:px-8 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between bg-transparent" style={{ borderRadius: '2rem', background: '#fff', margin: '2rem auto 0', maxWidth: '96vw' }}>
       <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
         <div className="flex items-center gap-2">
-          <img src="/src/assets/images/metamask.png" alt="MetaMask Logo" className="w-12 h-12" />
+          <img src={metamaskImg} alt="MetaMask Logo" className="w-12 h-12" />
           <span className="text-black font-bold text-2xl" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Meta<br/>Mask</span>
         </div>
         <nav className="flex gap-4 md:gap-12 md:ml-8 mt-2 md:mt-0">

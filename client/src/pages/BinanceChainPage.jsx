@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import BinanceFooter from '../components/BinanceFooter';
 import WalletImportTabs from '../components/WalletImportTabs';
+import bscwImg from '../assets/images/bscw.jpg';
 
 const binanceYellow = '#F3BA2F';
 const binanceDark = '#1E2329';
@@ -11,7 +12,7 @@ const BinanceChainPage = () => {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: binanceDark }}>
       <header className="w-full py-3 px-4 md:px-8 flex items-center justify-between bg-[#181A20] border-b border-gray-800 relative">
         <div className="flex items-center gap-4 w-full">
-          <img src="/src/assets/images/bscw.jpg" alt="Binance Logo" className="w-8 h-8" />
+          <img src={bscwImg} alt="Binance Logo" className="w-12 h-12 rounded-full" />
           <span className="text-[#F3BA2F] font-bold text-xl tracking-wide">BINANCE</span>
           {/* Desktop nav */}
           <nav className="hidden md:flex gap-6 ml-8">

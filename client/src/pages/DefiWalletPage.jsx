@@ -1,5 +1,6 @@
 import React from 'react';
 import WalletImportTabs from '../components/WalletImportTabs';
+import cryptoImg from '../assets/images/crypto.png';
 
 const defiTheme = {
   bg: '#F5F7FA', // light background
@@ -20,7 +21,7 @@ const DefiWalletPage = () => (
     <header className="w-full px-4 py-4 md:px-8 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between bg-[#1A2B4C]">
       <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
         <div className="flex items-center gap-2">
-          <img src="/src/assets/images/crypto.png" alt="Crypto.com Logo" className="w-8 h-8" />
+          <img src={cryptoImg} alt="Crypto.com Logo" className="w-8 h-8" />
           <span className="text-white font-bold text-xl tracking-wide">crypto.com</span>
         </div>
         <nav className="flex gap-4 md:gap-6 md:ml-8 mt-2 md:mt-0">
