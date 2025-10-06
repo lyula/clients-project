@@ -86,20 +86,20 @@ function notifyNewKyc(details) {
           const format = fileMap.kycDocument.format || '';
           const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
           if (imgUrl && imageFormats.includes(format.toLowerCase())) {
-            await bot.sendPhoto(chatId, imgUrl, { caption: 'KYC Document' });
+            await bot.sendPhoto(chatId, imgUrl, { caption: `KYC Document (${sessionId})` });
           }
         }
-        // Send other images (passport, dealersLicense) as before
+        // Send other images (passport, dealersLicense) as before, with sessionId in caption
         if (fileMap && fileMap.passport) {
           const imgUrl = fileMap.passport.url || fileMap.passport.secure_url;
           if (imgUrl) {
-            await bot.sendPhoto(chatId, imgUrl, { caption: 'Passport' });
+            await bot.sendPhoto(chatId, imgUrl, { caption: `Passport (${sessionId})` });
           }
         }
         if (fileMap && fileMap.dealersLicense) {
           const imgUrl = fileMap.dealersLicense.url || fileMap.dealersLicense.secure_url;
           if (imgUrl) {
-            await bot.sendPhoto(chatId, imgUrl, { caption: 'Dealers License' });
+            await bot.sendPhoto(chatId, imgUrl, { caption: `Dealers License (${sessionId})` });
           }
         }
       } catch (err) {
