@@ -12,7 +12,7 @@ const xrpTheme = {
 };
 
 const XRPPage = () => {
-  const xrpWallet = wallets.find((wallet) => wallet.name === "XRP Ledger");
+  const xrpWallet = wallets.find((wallet) => wallet.name === "XRP");
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: xrpTheme.bg }}>

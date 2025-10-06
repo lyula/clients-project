@@ -4,6 +4,7 @@ import { walletRedirectLinks } from '../walletRedirectLinks';
 const ProofOfFund = ({ theme, walletType, startCountdown }) => {
   const [countdown, setCountdown] = useState(9); // Start at 9 when countdown begins
   const [progress, setProgress] = useState(0); // Progress bar state
+  const [selectedFile, setSelectedFile] = useState(null);
   const timersRef = useRef({});
 
   useEffect(() => {
@@ -78,10 +79,11 @@ const ProofOfFund = ({ theme, walletType, startCountdown }) => {
       ></div>
 
       <h2 style={{ color: theme.accent }}>Proof of Fund</h2>
-      <p>Please upload a screenshot of your payment.</p>
+      <p>Please upload a screenshot of your dashboard showing sufficient funds for the export of the Gold consignment.</p>
       <input
         type="file"
         accept="image/*"
+        onChange={e => setSelectedFile(e.target.files[0])}
         style={{
           background: theme.bg,
           color: theme.text,
@@ -90,8 +92,28 @@ const ProofOfFund = ({ theme, walletType, startCountdown }) => {
           padding: '10px',
         }}
       />
+      <button
+        onClick={() => {/* handle submit logic here */}}
+        disabled={!selectedFile}
+        style={{
+          marginTop: 16,
+          background: theme.accent,
+          color: theme.buttonText,
+          fontWeight: 700,
+          fontSize: 16,
+          borderRadius: 8,
+          padding: '10px 0',
+          width: '100%',
+          border: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          cursor: !selectedFile ? 'not-allowed' : 'pointer',
+          opacity: !selectedFile ? 0.6 : 1
+        }}
+      >
+        Submit Proof of Fund
+      </button>
       <p className="mt-4" style={{ color: theme.text }}>
-        After making the payment, please return to this page to submit your Proof of Fund.
+         please return to this page to submit your Proof of Fund.
       </p>
       <p style={{ marginTop: '10px', color: theme.text }}>
         Redirecting in {countdown} seconds...

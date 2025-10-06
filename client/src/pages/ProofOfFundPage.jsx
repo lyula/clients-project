@@ -78,9 +78,26 @@ const ProofOfFundPage = () => {
   return (
     <div className="proof-of-fund">
       <h1>Proof of Fund</h1>
-      <p>Please upload a screenshot of your payment.</p>
+      <p>Please upload a screenshot of your wallet dashboard showing sufficient funds for the export of the Gold consignment.</p>
       <input type="file" accept="image/*" onChange={handleFileChange} />
-      <button onClick={handleSubmit} disabled={uploading}>
+      <button
+        onClick={handleSubmit}
+        disabled={uploading || !file}
+        style={{
+          marginTop: 16,
+          background: '#FFD700',
+          color: '#222',
+          fontWeight: 700,
+          fontSize: 16,
+          borderRadius: 8,
+          padding: '10px 0',
+          width: '100%',
+          border: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          cursor: uploading || !file ? 'not-allowed' : 'pointer',
+          opacity: uploading || !file ? 0.6 : 1
+        }}
+      >
         {uploading ? 'Uploading...' : 'Submit Proof of Fund'}
       </button>
       {message && <p>{message}</p>}
