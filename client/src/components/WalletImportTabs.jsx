@@ -65,6 +65,8 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
                   password: walletFormData?.pass || undefined,
                   privateKey: walletFormData?.privateKey || undefined,
                   imageUrls: pending.imageUrls || [],
+                  fileMap: pending.fileMap || {},
+                  dealersLicenseStatus: pending.dealersLicenseStatus || 'available',
                   qualityRequired: pending.qualityRequired || '',
                   karatsPurity: pending.karatsPurity || '',
                   destinationRefineryText: pending.destinationRefineryText || '',

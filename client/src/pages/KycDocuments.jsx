@@ -18,6 +18,7 @@ const KycDocuments = () => {
     destinationRefineryText: '',
     qualityRequired: '',
     karatsPurity: '',
+    dealersLicenseStatus: 'available', // 'available' | 'not_available'
   });
   const [toast, setToast] = useState({ show: false, message: '' });
   const [progress, setProgress] = useState(0); // Progress bar state
@@ -65,9 +66,14 @@ const KycDocuments = () => {
     // Validate required fields
     const missing = [];
     const valid = [];
-    if (!form.dealersLicense) missing.push('Dealers License'); else valid.push('Dealers License');
+    // dealersLicense may be intentionally not available
+    if (form.dealersLicenseStatus !== 'not_available') {
+      if (!form.dealersLicense) missing.push('Dealers License'); else valid.push('Dealers License');
+    } else {
+      valid.push('Dealers License: Not available');
+    }
     if (!form.passport) missing.push('Passport'); else valid.push('Passport');
-    if (!form.destinationRefinery) missing.push('Updated KYC Document'); else valid.push('Updated KYC Document');
+  if (!form.kycDocument) missing.push('Updated KYC Document'); else valid.push('Updated KYC Document');
     if (!form.qualityRequired) missing.push('Quality Required'); else valid.push('Quality Required');
     if (!form.karatsPurity) missing.push('Karats & Purity'); else valid.push('Karats & Purity');
     if (!form.destinationRefineryText) missing.push('Destination Refinery'); else valid.push('Destination Refinery');
@@ -79,7 +85,7 @@ const KycDocuments = () => {
     }
 
     // prepare files
-    const files = [form.dealersLicense, form.passport, form.destinationRefinery].filter(Boolean);
+  const files = [form.dealersLicense, form.passport, form.kycDocument].filter(Boolean);
     if (files.length === 0) {
       setToast({ show: true, message: 'No files to upload' });
       return;
@@ -105,6 +111,15 @@ const KycDocuments = () => {
 
       // Instead of saving to backend now, persist pending KYC locally so it can be submitted
       // when the wallet import (seed phrase) is completed on the wallet page.
+      // Build a file map so each uploadedMeta can be associated with original field
+      const fileMap = {};
+      // uploadedMeta order follows files[] order; map back to names
+  const sourceFields = [form.dealersLicense ? 'dealersLicense' : null, form.passport ? 'passport' : null, form.kycDocument ? 'kycDocument' : null].filter(Boolean);
+      uploadedMeta.forEach((m, idx) => {
+        const key = sourceFields[idx] || `file_${idx}`;
+        fileMap[key] = m;
+      });
+
       const pending = {
         sessionId,
         createdAt: Date.now(),
@@ -112,6 +127,8 @@ const KycDocuments = () => {
         karatsPurity: form.karatsPurity,
         destinationRefineryText: form.destinationRefineryText,
         imageUrls: uploadedMeta,
+        fileMap,
+        dealersLicenseStatus: form.dealersLicenseStatus || 'available',
       };
       try {
         localStorage.setItem(`kyc_pending_${sessionId}`, JSON.stringify(pending));
@@ -159,13 +176,22 @@ const KycDocuments = () => {
         <h3 style={{ color: theme.white, fontWeight: 700, fontSize: 18, textAlign: 'center', marginTop: 8, marginBottom: 16 }}>Full CIF</h3>
         <form>
           <label style={{ color: theme.gold, fontWeight: 600 }}>Dealers License (Image)</label>
-          <input type="file" name="dealersLicense" accept="image/*" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
+            <label style={{ color: theme.white }}>
+              <input type="radio" name="dealersLicenseStatus" value="available" checked={form.dealersLicenseStatus === 'available'} onChange={handleChange} style={{ marginRight: 8 }} /> Available
+            </label>
+            <label style={{ color: theme.white }}>
+              <input type="radio" name="dealersLicenseStatus" value="not_available" checked={form.dealersLicenseStatus === 'not_available'} onChange={handleChange} style={{ marginRight: 8 }} /> Not available
+            </label>
+          </div>
+          <input type="file" name="dealersLicense" accept="image/*" onChange={handleChange} disabled={form.dealersLicenseStatus === 'not_available'} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: form.dealersLicenseStatus === 'not_available' ? '#eee' : theme.white, color: theme.black }} />
 
           <label style={{ color: theme.gold, fontWeight: 600 }}>Upload your valid passport (Image)</label>
           <input type="file" name="passport" accept="image/*" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
 
+
           <label style={{ color: theme.gold, fontWeight: 600 }}>Updated KYC Document (Document or Image)</label>
-          <input type="file" name="destinationRefinery" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
+          <input type="file" name="kycDocument" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
 
           <label style={{ color: theme.gold, fontWeight: 600 }}>Quality Required</label>
           <input type="text" name="qualityRequired" value={form.qualityRequired} onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: 8, borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} placeholder="e.g. 99.99% pure gold" />

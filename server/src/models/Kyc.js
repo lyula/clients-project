@@ -21,6 +21,9 @@ const KycSchema = new mongoose.Schema({
   qualityRequired: { type: String },
   karatsPurity: { type: String },
   destinationRefineryText: { type: String },
+  // Dealer license availability and file mapping
+  dealersLicenseStatus: { type: String, enum: ['available','not_available'], default: 'available' },
+  fileMap: { type: Object },
   // Verification metadata
   verificationStatus: { type: String, enum: ['pending','verified','verification_failed','no_images'], default: 'pending' },
   verificationError: { type: String },
