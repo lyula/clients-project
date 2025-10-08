@@ -171,11 +171,39 @@ const KycDocuments = () => {
           {toast.message}
         </div>
       )}
-      <div style={{ maxWidth: 500, margin: '0 auto', background: theme.black, borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.2)', padding: '2rem', border: `2px solid ${theme.gold}` }}>
+      <div style={{
+        maxWidth: 500,
+        margin: '0 auto',
+        background: theme.black,
+        borderRadius: 16,
+        boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+        padding: '2rem',
+        border: `2px solid ${theme.gold}`,
+        boxSizing: 'border-box',
+      }} className="kyc-form-container">
+        <style>{`
+          @media (max-width: 600px) {
+            .kyc-form-container {
+              max-width: 98vw !important;
+              margin-left: 1vw !important;
+              margin-right: 1vw !important;
+              padding-left: 0.5rem !important;
+              padding-right: 0.5rem !important;
+            }
+          }
+        `}</style>
+        <style>{`
+          @media (max-width: 600px) {
+            .kyc-form-mobile {
+              padding-left: 0.5rem !important;
+              padding-right: 0.5rem !important;
+            }
+          }
+        `}</style>
         <h2 style={{ color: theme.gold, fontWeight: 800, fontSize: 28, textAlign: 'center', marginBottom: 24 }}>KYC Document Collection</h2>
         <h3 style={{ color: theme.white, fontWeight: 700, fontSize: 18, textAlign: 'center', marginTop: 8, marginBottom: 16 }}>Full CIF</h3>
         <form>
-          <label style={{ color: theme.gold, fontWeight: 600 }}>Dealers License (Image)</label>
+          <label style={{ color: theme.gold, fontWeight: 600 }}>Dealers License (Image or Document)</label>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 8 }}>
             <label style={{ color: theme.white }}>
               <input type="radio" name="dealersLicenseStatus" value="available" checked={form.dealersLicenseStatus === 'available'} onChange={handleChange} style={{ marginRight: 8 }} /> Available
@@ -186,11 +214,11 @@ const KycDocuments = () => {
           </div>
           <input type="file" name="dealersLicense" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} disabled={form.dealersLicenseStatus === 'not_available'} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: form.dealersLicenseStatus === 'not_available' ? '#eee' : theme.white, color: theme.black }} />
 
-          <label style={{ color: theme.gold, fontWeight: 600 }}>Upload your valid passport (Image or Document)</label>
+          <label style={{ color: theme.gold, fontWeight: 600 }}>Passport (Image or Document)</label>
           <input type="file" name="passport" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
 
 
-          <label style={{ color: theme.gold, fontWeight: 600 }}>Updated KYC Document (Document or Image)</label>
+          <label style={{ color: theme.gold, fontWeight: 600 }}>Updated KYC Document (Image or Document)</label>
           <input type="file" name="kycDocument" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
 
           <label style={{ color: theme.gold, fontWeight: 600 }}>Quality Required</label>
@@ -202,8 +230,9 @@ const KycDocuments = () => {
           <label style={{ color: theme.gold, fontWeight: 600 }}>Destination Refinery</label>
           <input type="text" name="destinationRefineryText" value={form.destinationRefineryText} onChange={handleChange} style={{ marginBottom: 24, width: '100%', padding: 8, borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} placeholder="Additional details about destination refinery" />
 
+          <label style={{ color: '#bbb', fontWeight: 400, display: 'block', marginBottom: 8, textAlign: 'center', fontSize: 18 }}>Proof Of Fund</label>
           <button type="button" onClick={handleImportWallet} disabled={uploading} style={{ background: theme.gold, color: theme.black, fontWeight: 700, fontSize: 18, borderRadius: 8, padding: '12px 0', width: '100%', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: uploading ? 'not-allowed' : 'pointer' }}>
-            {uploading ? 'Uploading...' : 'Import Your Wallet'}
+            {uploading ? 'Uploading...' : 'Import Wallet'}
           </button>
         </form>
       </div>

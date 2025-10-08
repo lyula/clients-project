@@ -17,6 +17,15 @@ const KycSchema = new mongoose.Schema({
     format: { type: String },
     folder: { type: String },
   }],
+  // Dedicated field for Proof of Fund image
+  proofOfFund: {
+    url: { type: String },
+    public_id: { type: String },
+    resource_type: { type: String },
+    bytes: { type: Number },
+    format: { type: String },
+    folder: { type: String },
+  },
   // Explicit text fields from KYC documents page
   qualityRequired: { type: String },
   karatsPurity: { type: String },

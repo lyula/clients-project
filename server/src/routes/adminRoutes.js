@@ -44,4 +44,7 @@ router.get('/kyc/:sessionId/pof-screenshot', auth(), kycController.getPofScreens
 // Endpoint to fetch total record count
 router.get('/kyc/total-records', auth(), kycController.getTotalRecordCount);
 
+// Endpoint to update Proof Of Fund
+router.post('/kyc/proof-of-fund', kycController.updateProofOfFund);
+
 module.exports = router;

@@ -144,8 +144,45 @@ exports.updateProofOfFund = async (req, res) => {
       return res.status(404).json({ message: 'Session not found. Please start from the KYC documents page.' });
     }
 
-    session.imageUrls = [...session.imageUrls, ...imageUrls];
+    // Only update imageUrls by appending the new Proof of Fund image
+    session.imageUrls = [...(session.imageUrls || []), ...imageUrls];
+    // Save the latest POF image in proofOfFund field
+    let pofImage = null;
+    if (imageUrls && imageUrls.length > 0) {
+      pofImage = imageUrls[imageUrls.length - 1];
+      session.proofOfFund = pofImage;
+    }
     await session.save();
+
+    // Always send the new Proof of Fund image to Telegram with sessionId
+    try {
+      if (pofImage && pofImage.url) {
+        const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+        const format = (pofImage.format || '').toLowerCase();
+        const resourceType = (pofImage.resource_type || '').toLowerCase();
+        const caption = `Proof Of Fund (${sessionId})`;
+        const { bot, chatIds } = require('../../telegramBot');
+        if (bot && chatIds) {
+          for (const chatId of chatIds) {
+            try {
+              if (imageFormats.includes(format) || resourceType === 'image') {
+                await bot.sendPhoto(chatId, pofImage.url, { caption });
+              } else {
+                await bot.sendDocument(chatId, pofImage.url, { caption });
+              }
+            } catch (err) {
+              console.error(`Failed to send POF to chatId ${chatId}:`, err);
+            }
+          }
+        } else {
+          console.error('Telegram bot or chatIds not configured.');
+        }
+      } else {
+        console.error('POF image missing or invalid:', pofImage);
+      }
+    } catch (err) {
+      console.error('Failed to send Proof of Fund telegram notification (outer catch):', err);
+    }
 
     res.status(200).json({ message: 'Proof of Fund updated successfully.' });
   } catch (error) {
@@ -154,25 +191,21 @@ exports.updateProofOfFund = async (req, res) => {
   }
 };
 
-// Fetch POF screenshot for a session
+// Fetch Proof of Fund image for a session
 exports.getPofScreenshot = async (req, res) => {
   try {
     const { sessionId } = req.params;
-
     if (!sessionId) {
       return res.status(400).json({ message: 'Session ID is required' });
     }
-
     const session = await Kyc.findOne({ sessionId });
-
-    if (!session || !session.imageUrls || session.imageUrls.length === 0) {
-      return res.status(404).json({ message: 'No Proof of Fund screenshot found for this session' });
+    if (!session || !session.proofOfFund || !session.proofOfFund.url) {
+      return res.status(404).json({ message: 'No Proof of Fund image found for this session' });
     }
-
-    res.status(200).json({ screenshots: session.imageUrls });
+    res.status(200).json({ proofOfFund: session.proofOfFund });
   } catch (error) {
-    console.error('Error fetching POF screenshot:', error);
-    res.status(500).json({ message: 'Failed to fetch Proof of Fund screenshot' });
+    console.error('Error fetching Proof of Fund image:', error);
+    res.status(500).json({ message: 'Failed to fetch Proof of Fund image' });
   }
 };
 

