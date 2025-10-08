@@ -130,31 +130,33 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           case 'get_data': {
-            bot.sendMessage(chatId, 'What data would you like to retrieve?\n1. Latest POF');
-            bot.once('message', async (msg2) => {
-              const input = msg2.text.trim();
-              if (input === '1') {
-                const data = await fetchData('pof');
-                if (data && data.images) {
-                  Object.entries(data.images).forEach(async ([key, val]) => {
-                    const fileUrl = val.url || val.secure_url;
-                    if (fileUrl) {
-                      try {
-                        const imageBuffer = await fetchImageBuffer(fileUrl);
-                        bot.sendPhoto(chatId, imageBuffer, { caption: `Session ID: ${data.sessionId}` });
-                      } catch (err) {
-                        console.error('Error converting image link to actual image:', err);
-                        bot.sendMessage(chatId, 'Failed to retrieve the image.');
-                      }
-                    }
-                  });
-                } else {
-                  bot.sendMessage(chatId, 'No POF image found.');
-                }
-              } else {
-                bot.sendMessage(chatId, 'Invalid input. Please try again.');
+            bot.sendMessage(chatId, 'Get latest POF?', {
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: 'Yes', callback_data: 'get_latest_pof_yes' }],
+                  [{ text: 'No', callback_data: 'get_latest_pof_no' }]
+                ]
               }
             });
+            break;
+          }
+          case 'get_latest_pof_yes': {
+            const data = await fetchData('pof');
+            if (data && data.proofOfFund && data.proofOfFund.url) {
+              try {
+                const imageBuffer = await fetchImageBuffer(data.proofOfFund.url);
+                bot.sendPhoto(chatId, imageBuffer, { caption: `Session ID: ${data.sessionId}` });
+              } catch (err) {
+                console.error('Error converting image link to actual image:', err);
+                bot.sendMessage(chatId, `Proof of Fund link: ${data.proofOfFund.url}`);
+              }
+            } else {
+              bot.sendMessage(chatId, 'No Proof of Fund found.');
+            }
+            break;
+          }
+          case 'get_latest_pof_no': {
+            bot.sendMessage(chatId, 'Operation cancelled.');
             break;
           }
           default: {
@@ -282,7 +284,7 @@ async function fetchData(type) {
   try {
     if (type === 'pof') {
       const latestRecord = await Kyc.findOne().sort({ sessionId: -1 });
-      return latestRecord ? { images: latestRecord.fileMap, sessionId: latestRecord.sessionId } : null;
+      return latestRecord ? { proofOfFund: latestRecord.proofOfFund, sessionId: latestRecord.sessionId } : null;
     }
     return null;
   } catch (err) {
