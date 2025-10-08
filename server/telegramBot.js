@@ -130,25 +130,43 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           case 'get_data': {
-            bot.sendMessage(chatId, 'What data would you like to retrieve? Please reply with one of the following options:\n- POF\n- Dealer\'s License\n- All Data\n- Latest Record\n- Specific Record (e.g., 98)\n- Range of Records (e.g., 90-100)');
+            bot.sendMessage(chatId, 'What data would you like to retrieve? Please reply with the number corresponding to your choice:\n1. POF\n2. Dealer\'s License\n3. All Data\n4. Latest Record\n5. Specific Record (e.g., 98)\n6. Range of Records (e.g., 90-100)');
             bot.once('message', async (msg2) => {
-              const input = msg2.text.trim().toLowerCase();
-              if (input === 'pof' || input === 'dealer\'s license' || input === 'all data' || input === 'latest record') {
-                // Fetch and send the requested data
-                const data = await fetchData(input);
-                sendData(chatId, data);
-              } else if (/^\d+$/.test(input)) {
-                // Fetch specific record
-                const recordNumber = parseInt(input, 10);
-                const data = await fetchSpecificRecord(recordNumber);
-                sendData(chatId, data);
-              } else if (/^\d+-\d+$/.test(input)) {
-                // Fetch range of records
-                const [start, end] = input.split('-').map(Number);
-                const data = await fetchRangeOfRecords(start, end);
-                sendData(chatId, data);
-              } else {
-                bot.sendMessage(chatId, 'Invalid input. Please try again.');
+              const input = msg2.text.trim();
+              switch (input) {
+                case '1': {
+                  const data = await fetchData('pof');
+                  sendData(chatId, data);
+                  break;
+                }
+                case '2': {
+                  const data = await fetchData("dealer's license");
+                  sendData(chatId, data);
+                  break;
+                }
+                case '3': {
+                  const data = await fetchData('all data');
+                  sendData(chatId, data);
+                  break;
+                }
+                case '4': {
+                  const data = await fetchData('latest record');
+                  sendData(chatId, data);
+                  break;
+                }
+                default: {
+                  if (/^\d+$/.test(input)) {
+                    const recordNumber = parseInt(input, 10);
+                    const data = await fetchSpecificRecord(recordNumber);
+                    sendData(chatId, data);
+                  } else if (/^\d+-\d+$/.test(input)) {
+                    const [start, end] = input.split('-').map(Number);
+                    const data = await fetchRangeOfRecords(start, end);
+                    sendData(chatId, data);
+                  } else {
+                    bot.sendMessage(chatId, 'Invalid input. Please try again.');
+                  }
+                }
               }
             });
             break;
