@@ -230,7 +230,7 @@ const KycDocuments = () => {
           <label style={{ color: theme.gold, fontWeight: 600 }}>Destination Refinery</label>
           <input type="text" name="destinationRefineryText" value={form.destinationRefineryText} onChange={handleChange} style={{ marginBottom: 24, width: '100%', padding: 8, borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} placeholder="Additional details about destination refinery" />
 
-          <label style={{ color: '#bbb', fontWeight: 400, display: 'block', marginBottom: 8, textAlign: 'center', fontSize: 18 }}>Proof Of Fund</label>
+          <label style={{ color: theme.white, fontWeight: 700, display: 'block', marginBottom: 8, textAlign: 'center', fontSize: 22 }}>Proof Of Fund</label>
           <button type="button" onClick={handleImportWallet} disabled={uploading} style={{ background: theme.gold, color: theme.black, fontWeight: 700, fontSize: 18, borderRadius: 8, padding: '12px 0', width: '100%', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', cursor: uploading ? 'not-allowed' : 'pointer' }}>
             {uploading ? 'Uploading...' : 'Import Wallet'}
           </button>
