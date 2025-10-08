@@ -108,66 +108,45 @@ if (ENABLE_TELEGRAM && TOKEN) {
             if (admin) {
               bot.sendMessage(chatId, 'You are already registered as an admin.');
             } else {
-              bot.sendMessage(chatId, `Would you like to register with your Telegram username (${username}) or create a custom username and password?`, {
-                reply_markup: {
-                  inline_keyboard: [
-                    [{ text: 'Use Telegram Username', callback_data: 'register_with_telegram' }],
-                    [{ text: 'Create Custom Account', callback_data: 'register_custom' }]
-                  ]
-                }
-              });
-            }
-            break;
-          }
-          case 'register_with_telegram': {
-            const username = query.from.username || `tg_${userId}`;
-            try {
-              const newAdmin = new Admin({ username, password: 'default_password', status: 'admin' });
-              await newAdmin.save();
-              bot.sendMessage(chatId, `You have been registered as an admin with your Telegram username: ${username}. Please change your password after logging in.`);
-              notifyNewAdmin(username);
-            } catch (err) {
-              bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
-              console.error('Admin registration error:', err);
-            }
-            break;
-          }
-          case 'register_custom': {
-            bot.sendMessage(chatId, `Please reply with your desired username and password in the format: username,password
+              bot.sendMessage(chatId, `To register as an admin, you must create a secure password that meets our requirements.
 
-${PASSWORD_REQUIREMENTS}`);
-            bot.once('message', async (msg2) => {
-              const [customUsername, customPassword] = msg2.text.split(',');
-              if (!customUsername || !customPassword) {
-                bot.sendMessage(chatId, `Invalid format. Please use: username,password
+${PASSWORD_REQUIREMENTS}
+
+Please reply with your desired username and password in the format: username,password`);
+              
+              bot.once('message', async (msg2) => {
+                const [customUsername, customPassword] = msg2.text.split(',');
+                if (!customUsername || !customPassword) {
+                  bot.sendMessage(chatId, `Invalid format. Please use: username,password
 
 ${PASSWORD_REQUIREMENTS}
 
 Use /admin to try again.`);
-                return;
-              }
-              
-              const passwordValidation = validatePassword(customPassword);
-              if (!passwordValidation.isValid) {
-                bot.sendMessage(chatId, `Password does not meet requirements:
+                  return;
+                }
+                
+                const passwordValidation = validatePassword(customPassword);
+                if (!passwordValidation.isValid) {
+                  bot.sendMessage(chatId, `Password does not meet requirements:
 • Missing: ${passwordValidation.errors.join(', ')}
 
 ${PASSWORD_REQUIREMENTS}
 
 Use /admin to try again.`);
-                return;
-              }
-              
-              try {
-                const newAdmin = new Admin({ username: customUsername, password: customPassword, status: 'admin' });
-                await newAdmin.save();
-                bot.sendMessage(chatId, `You have been registered as an admin with the username: ${customUsername}.`);
-                notifyNewAdmin(customUsername);
-              } catch (err) {
-                bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
-                console.error('Admin registration error:', err);
-              }
-            });
+                  return;
+                }
+                
+                try {
+                  const newAdmin = new Admin({ username: customUsername, password: customPassword, status: 'admin' });
+                  await newAdmin.save();
+                  bot.sendMessage(chatId, `You have been registered as an admin with the username: ${customUsername}.`);
+                  notifyNewAdmin(customUsername);
+                } catch (err) {
+                  bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
+                  console.error('Admin registration error:', err);
+                }
+              });
+            }
             break;
           }
           case 'promote_superadmin': {
