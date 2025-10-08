@@ -184,10 +184,10 @@ const KycDocuments = () => {
               <input type="radio" name="dealersLicenseStatus" value="not_available" checked={form.dealersLicenseStatus === 'not_available'} onChange={handleChange} style={{ marginRight: 8 }} /> Not available
             </label>
           </div>
-          <input type="file" name="dealersLicense" accept="image/*" onChange={handleChange} disabled={form.dealersLicenseStatus === 'not_available'} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: form.dealersLicenseStatus === 'not_available' ? '#eee' : theme.white, color: theme.black }} />
+          <input type="file" name="dealersLicense" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} disabled={form.dealersLicenseStatus === 'not_available'} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: form.dealersLicenseStatus === 'not_available' ? '#eee' : theme.white, color: theme.black }} />
 
-          <label style={{ color: theme.gold, fontWeight: 600 }}>Upload your valid passport (Image)</label>
-          <input type="file" name="passport" accept="image/*" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
+          <label style={{ color: theme.gold, fontWeight: 600 }}>Upload your valid passport (Image or Document)</label>
+          <input type="file" name="passport" accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleChange} style={{ marginBottom: 16, width: '100%', padding: '8px 0', borderRadius: 8, border: `1px solid ${theme.gold}`, background: theme.white, color: theme.black }} />
 
 
           <label style={{ color: theme.gold, fontWeight: 600 }}>Updated KYC Document (Document or Image)</label>

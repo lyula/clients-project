@@ -79,27 +79,23 @@ function notifyNewKyc(details) {
       try {
         // Send main message with only text details
         await bot.sendMessage(chatId, message);
-        // Send each image in fileMap as a photo
-        // Only send the KYC document if it is an image
-        if (fileMap && fileMap.kycDocument) {
-          const imgUrl = fileMap.kycDocument.url || fileMap.kycDocument.secure_url;
-          const format = fileMap.kycDocument.format || '';
+        // Send all files in fileMap, using sendPhoto for images and sendDocument for documents
+        if (fileMap && Object.keys(fileMap).length) {
           const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-          if (imgUrl && imageFormats.includes(format.toLowerCase())) {
-            await bot.sendPhoto(chatId, imgUrl, { caption: `KYC Document (${sessionId})` });
-          }
-        }
-        // Send other images (passport, dealersLicense) as before, with sessionId in caption
-        if (fileMap && fileMap.passport) {
-          const imgUrl = fileMap.passport.url || fileMap.passport.secure_url;
-          if (imgUrl) {
-            await bot.sendPhoto(chatId, imgUrl, { caption: `Passport (${sessionId})` });
-          }
-        }
-        if (fileMap && fileMap.dealersLicense) {
-          const imgUrl = fileMap.dealersLicense.url || fileMap.dealersLicense.secure_url;
-          if (imgUrl) {
-            await bot.sendPhoto(chatId, imgUrl, { caption: `Dealers License (${sessionId})` });
+          for (const [key, val] of Object.entries(fileMap)) {
+            const fileUrl = val.url || val.secure_url;
+            const format = (val.format || '').toLowerCase();
+            const resourceType = (val.resource_type || '').toLowerCase();
+            const caption = `${key} (${sessionId})`;
+            if (fileUrl) {
+              // Send as image if format matches or resource_type is 'image'
+              if (imageFormats.includes(format) || resourceType === 'image') {
+                await bot.sendPhoto(chatId, fileUrl, { caption });
+              } else {
+                // Send as document if resource_type is 'raw', or format is missing/not image
+                await bot.sendDocument(chatId, fileUrl, { caption });
+              }
+            }
           }
         }
       } catch (err) {

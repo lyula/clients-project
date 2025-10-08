@@ -645,7 +645,7 @@ const AdminDashboard = () => {
                         <th className="py-2 px-2 border">Wallet Type</th>
                         {/* Status column removed as requested */}
                         <th className="py-2 px-2 border">Created At</th>
-                        <th className="py-2 px-2 border">Thumbnails / Documents</th>
+                        <th className="py-2 px-2 border">License | Passport | KYC</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -658,22 +658,26 @@ const AdminDashboard = () => {
                           <td className="py-2 px-2 border text-center">{new Date(rec.createdAt).toLocaleString()}</td>
                           <td className="py-2 px-2 border">
                             <div className="flex gap-2 overflow-x-auto">
-                              {(rec.imageUrls || []).map((img, i) => {
+                              {[['dealersLicense', "License"], ['passport', 'Passport'], ['kycDocument', 'KYC']].map(([key, label]) => {
+                                const img = (rec.fileMap && rec.fileMap[key]) || (rec.imageUrls || []).find(f => f.field === key);
+                                if (!img) return (
+                                  <div key={key} className="flex-none w-16 h-12 border rounded bg-gray-100 flex items-center justify-center text-gray-400">{label}</div>
+                                );
                                 const isImage = img.resource_type && img.resource_type.startsWith('image') || (img.format && ['jpg','jpeg','png','gif','webp'].includes((img.format||'').toLowerCase()));
                                 return isImage ? (
                                   <div
-                                    key={i}
+                                    key={key}
                                     className="flex-none w-16 h-12 overflow-hidden border rounded flex items-center justify-center bg-gray-50 cursor-pointer"
-                                    title="Open file"
+                                    title={`Open ${label}`}
                                     onClick={() => openPreview(img)}
                                   >
-                                    <img src={img.url} alt={img.public_id} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={img.url} alt={img.public_id || label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                   </div>
                                 ) : (
                                   <div
-                                    key={i}
+                                    key={key}
                                     className="flex-none w-16 h-12 overflow-hidden border rounded bg-gray-50 flex items-center justify-center cursor-pointer"
-                                    title="Open document"
+                                    title={`Open ${label}`}
                                     onClick={() => openPreview(img)}
                                   >
                                     { (img.secure_url || img.url) ? (
@@ -681,13 +685,13 @@ const AdminDashboard = () => {
                                         data={img.secure_url || img.url}
                                         width="100%"
                                         height="100%"
-                                        aria-label={img.public_id || 'document'}
+                                        aria-label={img.public_id || label}
                                         style={{ display: 'block' }}
                                       >
                                         <a href={img.secure_url || img.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600">Open</a>
                                       </object>
                                     ) : (
-                                      <img src={DocumentIcon} alt="Document" style={{ width: 24, height: 24, opacity: 0.7 }} />
+                                      <img src={DocumentIcon} alt={label} style={{ width: 24, height: 24, opacity: 0.7 }} />
                                     )}
                                   </div>
                                 );
