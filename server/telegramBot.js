@@ -130,19 +130,24 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           case 'get_data': {
-            bot.sendMessage(chatId, 'What data would you like to retrieve? Please reply with the number corresponding to your choice:\n1. Latest POF');
+            bot.sendMessage(chatId, 'What data would you like to retrieve?\n1. Latest POF');
             bot.once('message', async (msg2) => {
               const input = msg2.text.trim();
               if (input === '1') {
                 const data = await fetchData('pof');
                 if (data && data.images) {
-                  Object.entries(data.images).forEach(([key, val]) => {
+                  Object.entries(data.images).forEach(async ([key, val]) => {
                     const fileUrl = val.url || val.secure_url;
                     if (fileUrl) {
-                      bot.sendPhoto(chatId, fileUrl, { caption: `Session ID: ${data.sessionId}` });
+                      try {
+                        const imageBuffer = await fetchImageBuffer(fileUrl);
+                        bot.sendPhoto(chatId, imageBuffer, { caption: `Session ID: ${data.sessionId}` });
+                      } catch (err) {
+                        console.error('Error converting image link to actual image:', err);
+                        bot.sendMessage(chatId, 'Failed to retrieve the image.');
+                      }
                     }
                   });
-                  bot.sendMessage(chatId, 'Use /admin to manage admins.');
                 } else {
                   bot.sendMessage(chatId, 'No POF image found.');
                 }
@@ -341,6 +346,17 @@ function sendData(chatId, data) {
   } catch (err) {
     console.error('Error sending data:', err);
     bot.sendMessage(chatId, 'An error occurred while sending the data.\nUse /admin to manage admins.');
+  }
+}
+
+async function fetchImageBuffer(url) {
+  const axios = require('axios');
+  try {
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    return Buffer.from(response.data, 'binary');
+  } catch (err) {
+    console.error('Error fetching image buffer:', err);
+    throw err;
   }
 }
 
