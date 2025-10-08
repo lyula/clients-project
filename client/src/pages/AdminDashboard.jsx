@@ -31,6 +31,14 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const AdminDashboard = () => {
   const [totalRecords, setTotalRecords] = useState(0);
 
+  // Redirect to login if adminToken does not exist
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.href = '/admin-login';
+    }
+  }, []);
+
   useEffect(() => {
     const fetchTotalRecords = async () => {
       try {
