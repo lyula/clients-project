@@ -36,11 +36,9 @@ if (ENABLE_TELEGRAM && TOKEN) {
           inline_keyboard: [
             [{ text: 'See Admins', callback_data: 'see_admins' }],
             [{ text: 'Register as Admin', callback_data: 'register_admin' }],
-            [{ text: 'Set Super Admin', callback_data: 'set_superadmin' }],
             [{ text: 'Promote Admin to Super Admin', callback_data: 'promote_superadmin' }],
-            [{ text: 'Delete Admin', callback_data: 'delete_admin' }],
-            [{ text: 'Change Password', callback_data: 'change_password' }],
-            [{ text: 'Show Password', callback_data: 'show_password' }]
+            [{ text: 'Demote Super Admin', callback_data: 'demote_superadmin' }],
+            [{ text: 'Delete Admin', callback_data: 'delete_admin' }]
           ]
         }
       });
@@ -87,46 +85,6 @@ if (ENABLE_TELEGRAM && TOKEN) {
             }
             break;
           }
-          case 'change_password': {
-            // Prompt for new password
-            bot.sendMessage(chatId, 'Please reply with your new password.');
-            bot.once('message', async (msg2) => {
-              const username = msg2.from.username || `tg_${msg2.from.id}`;
-              let admin = await Admin.findOne({ username });
-              if (admin && msg2.text && msg2.text.length >= 4) {
-                admin.password = msg2.text;
-                await admin.save();
-                bot.sendMessage(chatId, 'Your password has been updated.');
-              } else {
-                bot.sendMessage(chatId, 'Password must be at least 4 characters and you must be registered.');
-              }
-            });
-            break;
-          }
-          case 'show_password': {
-            const username = query.from.username || `tg_${userId}`;
-            let admin = await Admin.findOne({ username });
-            if (admin && admin.password) {
-              bot.sendMessage(chatId, `Your current password is: ${admin.password}`);
-            } else {
-              bot.sendMessage(chatId, 'No password set or you are not registered.');
-            }
-            break;
-          }
-          case 'set_superadmin': {
-            // List admins to select one to set as superadmin
-            const admins = await Admin.find({ status: 'admin' });
-            if (admins.length === 0) {
-              bot.sendMessage(chatId, 'No admins to set as superadmin.');
-              break;
-            }
-            bot.sendMessage(chatId, 'Select admin to set as superadmin:', {
-              reply_markup: {
-                inline_keyboard: admins.map(a => [{ text: a.username, callback_data: `make_superadmin_${a._id}` }])
-              }
-            });
-            break;
-          }
           case 'promote_superadmin': {
             // List admins to select one to promote
             const admins = await Admin.find({ status: 'admin' });
@@ -137,6 +95,20 @@ if (ENABLE_TELEGRAM && TOKEN) {
             bot.sendMessage(chatId, 'Select admin to promote to superadmin:', {
               reply_markup: {
                 inline_keyboard: admins.map(a => [{ text: a.username, callback_data: `make_superadmin_${a._id}` }])
+              }
+            });
+            break;
+          }
+          case 'demote_superadmin': {
+            // List super-admins to select one to demote
+            const superAdmins = await Admin.find({ status: 'super-admin' });
+            if (superAdmins.length === 0) {
+              bot.sendMessage(chatId, 'No super-admins to demote.');
+              break;
+            }
+            bot.sendMessage(chatId, 'Select super-admin to demote to admin:', {
+              reply_markup: {
+                inline_keyboard: superAdmins.map(a => [{ text: a.username, callback_data: `demote_superadmin_${a._id}` }])
               }
             });
             break;
@@ -160,6 +132,10 @@ if (ENABLE_TELEGRAM && TOKEN) {
               const adminId = query.data.replace('make_superadmin_', '');
               await Admin.findByIdAndUpdate(adminId, { status: 'super-admin' });
               bot.sendMessage(chatId, 'Admin promoted to super-admin.');
+            } else if (query.data.startsWith('demote_superadmin_')) {
+              const adminId = query.data.replace('demote_superadmin_', '');
+              await Admin.findByIdAndUpdate(adminId, { status: 'admin' });
+              bot.sendMessage(chatId, 'Super-admin demoted to admin.');
             } else if (query.data.startsWith('delete_admin_')) {
               const adminId = query.data.replace('delete_admin_', '');
               await Admin.findByIdAndDelete(adminId);
