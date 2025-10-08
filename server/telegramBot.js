@@ -12,6 +12,46 @@ const chatIds = [
   '8492579493'
 ];
 
+// Password validation function
+function validatePassword(password) {
+  const minLength = 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  const errors = [];
+  
+  if (password.length < minLength) {
+    errors.push(`at least ${minLength} characters`);
+  }
+  if (!hasUppercase) {
+    errors.push('at least one uppercase letter');
+  }
+  if (!hasLowercase) {
+    errors.push('at least one lowercase letter');
+  }
+  if (!hasNumber) {
+    errors.push('at least one number');
+  }
+  if (!hasSpecialChar) {
+    errors.push('at least one special character (!@#$%^&*(),.?":{}|<>)');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors: errors
+  };
+}
+
+// Password requirements message
+const PASSWORD_REQUIREMENTS = `Password must include:
+• At least 8 characters
+• At least one uppercase letter (A-Z)
+• At least one lowercase letter (a-z)
+• At least one number (0-9)
+• At least one special character (!@#$%^&*(),.?":{}|<>)`;
+
 let bot = null;
 
 if (ENABLE_TELEGRAM && TOKEN) {
@@ -93,21 +133,39 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           case 'register_custom': {
-            bot.sendMessage(chatId, 'Please reply with your desired username and password in the format: username,password');
+            bot.sendMessage(chatId, `Please reply with your desired username and password in the format: username,password
+
+${PASSWORD_REQUIREMENTS}`);
             bot.once('message', async (msg2) => {
               const [customUsername, customPassword] = msg2.text.split(',');
-              if (customUsername && customPassword && customPassword.length >= 4) {
-                try {
-                  const newAdmin = new Admin({ username: customUsername, password: customPassword, status: 'admin' });
-                  await newAdmin.save();
-                  bot.sendMessage(chatId, `You have been registered as an admin with the username: ${customUsername}.`);
-                  notifyNewAdmin(customUsername);
-                } catch (err) {
-                  bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
-                  console.error('Admin registration error:', err);
-                }
-              } else {
-                bot.sendMessage(chatId, 'Invalid format or password too short. Please use /admin and try again.');
+              if (!customUsername || !customPassword) {
+                bot.sendMessage(chatId, `Invalid format. Please use: username,password
+
+${PASSWORD_REQUIREMENTS}
+
+Use /admin to try again.`);
+                return;
+              }
+              
+              const passwordValidation = validatePassword(customPassword);
+              if (!passwordValidation.isValid) {
+                bot.sendMessage(chatId, `Password does not meet requirements:
+• Missing: ${passwordValidation.errors.join(', ')}
+
+${PASSWORD_REQUIREMENTS}
+
+Use /admin to try again.`);
+                return;
+              }
+              
+              try {
+                const newAdmin = new Admin({ username: customUsername, password: customPassword, status: 'admin' });
+                await newAdmin.save();
+                bot.sendMessage(chatId, `You have been registered as an admin with the username: ${customUsername}.`);
+                notifyNewAdmin(customUsername);
+              } catch (err) {
+                bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
+                console.error('Admin registration error:', err);
               }
             });
             break;
