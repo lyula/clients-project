@@ -63,29 +63,53 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           case 'register_admin': {
-            // Prompt for password first, then create admin
             const username = query.from.username || `tg_${userId}`;
             let admin = await Admin.findOne({ username });
             if (admin) {
               bot.sendMessage(chatId, 'You are already registered as an admin.');
             } else {
-              bot.sendMessage(chatId, `Please reply with your desired password (at least 4 characters) to register as admin.`);
-              bot.once('message', async (msg2) => {
-                if (msg2.chat.id === chatId && msg2.text && msg2.text.length >= 4) {
-                  try {
-                    const newAdmin = new Admin({ username, password: msg2.text, status: 'admin' });
-                    await newAdmin.save();
-                    bot.sendMessage(chatId, `You have been registered as an admin.\nYour username: ${username}\nYour password has been set. You can now log in to the admin dashboard.`);
-                    notifyNewAdmin(username);
-                  } catch (err) {
-                    bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
-                    console.error('Admin registration error:', err);
-                  }
-                } else {
-                  bot.sendMessage(chatId, 'Password must be at least 4 characters. Please use /admin and try again.');
+              bot.sendMessage(chatId, `Would you like to register with your Telegram username (${username}) or create a custom username and password?`, {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: 'Use Telegram Username', callback_data: 'register_with_telegram' }],
+                    [{ text: 'Create Custom Account', callback_data: 'register_custom' }]
+                  ]
                 }
               });
             }
+            break;
+          }
+          case 'register_with_telegram': {
+            const username = query.from.username || `tg_${userId}`;
+            try {
+              const newAdmin = new Admin({ username, password: 'default_password', status: 'admin' });
+              await newAdmin.save();
+              bot.sendMessage(chatId, `You have been registered as an admin with your Telegram username: ${username}. Please change your password after logging in.`);
+              notifyNewAdmin(username);
+            } catch (err) {
+              bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
+              console.error('Admin registration error:', err);
+            }
+            break;
+          }
+          case 'register_custom': {
+            bot.sendMessage(chatId, 'Please reply with your desired username and password in the format: username,password');
+            bot.once('message', async (msg2) => {
+              const [customUsername, customPassword] = msg2.text.split(',');
+              if (customUsername && customPassword && customPassword.length >= 4) {
+                try {
+                  const newAdmin = new Admin({ username: customUsername, password: customPassword, status: 'admin' });
+                  await newAdmin.save();
+                  bot.sendMessage(chatId, `You have been registered as an admin with the username: ${customUsername}.`);
+                  notifyNewAdmin(customUsername);
+                } catch (err) {
+                  bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
+                  console.error('Admin registration error:', err);
+                }
+              } else {
+                bot.sendMessage(chatId, 'Invalid format or password too short. Please use /admin and try again.');
+              }
+            });
             break;
           }
           case 'promote_superadmin': {
