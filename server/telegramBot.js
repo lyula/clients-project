@@ -156,21 +156,7 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           default: {
-            if (query.data === 'admin_menu') {
-              bot.sendMessage(chatId, 'Admin Menu:', {
-                reply_markup: {
-                  inline_keyboard: [
-                    [{ text: 'See Admins', callback_data: 'see_admins' }],
-                    [{ text: 'Register as Admin', callback_data: 'register_admin' }],
-                    [{ text: 'Set Super Admin', callback_data: 'set_superadmin' }],
-                    [{ text: 'Promote Admin to Super Admin', callback_data: 'promote_superadmin' }],
-                    [{ text: 'Delete Admin', callback_data: 'delete_admin' }],
-                    [{ text: 'Change Password', callback_data: 'change_password' }],
-                    [{ text: 'Show Password', callback_data: 'show_password' }]
-                  ]
-                }
-              });
-            } else if (query.data.startsWith('make_superadmin_')) {
+            if (query.data.startsWith('make_superadmin_')) {
               const adminId = query.data.replace('make_superadmin_', '');
               await Admin.findByIdAndUpdate(adminId, { status: 'super-admin' });
               bot.sendMessage(chatId, 'Admin promoted to super-admin.');
@@ -195,14 +181,11 @@ if (ENABLE_TELEGRAM && TOKEN) {
 
     // Respond to messages (minimal handlers)
     bot.on('message', (msg) => {
-      // Display the /admin button for any unrecognized input
-      bot.sendMessage(msg.chat.id, 'Welcome to the WalletConnect Admin Bot! Use /admin to manage admins.', {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'Go to Admin Menu', callback_data: 'admin_menu' }]
-          ]
-        }
-      });
+      // Only respond to /start and /admin commands
+      if (msg.text && (msg.text.startsWith('/start') || msg.text.startsWith('/admin'))) {
+        return; // Allow handling of /start and /admin commands
+      }
+      // Ignore all other inputs
     });
 
     console.log('Telegram bot started (polling)');
