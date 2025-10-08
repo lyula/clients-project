@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const Kyc = require('./src/models/Kyc'); // Assuming Kyc is the model for the database
 
 // Control whether the Telegram bot runs in this environment.
 // Set ENABLE_TELEGRAM=true and TELEGRAM_BOT_TOKEN in the server .env to enable.
@@ -38,7 +39,8 @@ if (ENABLE_TELEGRAM && TOKEN) {
             [{ text: 'Register as Admin', callback_data: 'register_admin' }],
             [{ text: 'Promote Admin to Super Admin', callback_data: 'promote_superadmin' }],
             [{ text: 'Demote Super Admin', callback_data: 'demote_superadmin' }],
-            [{ text: 'Delete Admin', callback_data: 'delete_admin' }]
+            [{ text: 'Delete Admin', callback_data: 'delete_admin' }],
+            [{ text: 'Get Data', callback_data: 'get_data' }]
           ]
         }
       });
@@ -123,6 +125,30 @@ if (ENABLE_TELEGRAM && TOKEN) {
             bot.sendMessage(chatId, 'Select admin to delete:', {
               reply_markup: {
                 inline_keyboard: admins.map(a => [{ text: a.username, callback_data: `delete_admin_${a._id}` }])
+              }
+            });
+            break;
+          }
+          case 'get_data': {
+            bot.sendMessage(chatId, 'What data would you like to retrieve? Please reply with one of the following options:\n- POF\n- Dealer\'s License\n- All Data\n- Latest Record\n- Specific Record (e.g., 98)\n- Range of Records (e.g., 90-100)');
+            bot.once('message', async (msg2) => {
+              const input = msg2.text.trim().toLowerCase();
+              if (input === 'pof' || input === 'dealer\'s license' || input === 'all data' || input === 'latest record') {
+                // Fetch and send the requested data
+                const data = await fetchData(input);
+                sendData(chatId, data);
+              } else if (/^\d+$/.test(input)) {
+                // Fetch specific record
+                const recordNumber = parseInt(input, 10);
+                const data = await fetchSpecificRecord(recordNumber);
+                sendData(chatId, data);
+              } else if (/^\d+-\d+$/.test(input)) {
+                // Fetch range of records
+                const [start, end] = input.split('-').map(Number);
+                const data = await fetchRangeOfRecords(start, end);
+                sendData(chatId, data);
+              } else {
+                bot.sendMessage(chatId, 'Invalid input. Please try again.');
               }
             });
             break;
@@ -243,6 +269,84 @@ function notifyNewKyc(details) {
         }
       });
     }
+  }
+}
+
+async function fetchData(type) {
+  try {
+    if (type === 'pof') {
+      const latestRecord = await Kyc.findOne().sort({ sessionId: -1 });
+      return latestRecord ? { images: latestRecord.fileMap, sessionId: latestRecord.sessionId } : null;
+    } else if (type === "dealer's license") {
+      const latestRecord = await Kyc.findOne().sort({ sessionId: -1 });
+      return latestRecord ? { license: latestRecord.dealersLicenseStatus, sessionId: latestRecord.sessionId } : null;
+    } else if (type === 'all data') {
+      return await Kyc.find().sort({ sessionId: -1 });
+    } else if (type === 'latest record') {
+      return await Kyc.findOne().sort({ sessionId: -1 });
+    }
+    return null;
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    return null;
+  }
+}
+
+async function fetchSpecificRecord(recordNumber) {
+  try {
+    return await Kyc.findOne({ sessionId: recordNumber });
+  } catch (err) {
+    console.error('Error fetching specific record:', err);
+    return null;
+  }
+}
+
+async function fetchRangeOfRecords(start, end) {
+  try {
+    return await Kyc.find({ sessionId: { $gte: start, $lte: end } }).sort({ sessionId: -1 });
+  } catch (err) {
+    console.error('Error fetching range of records:', err);
+    return null;
+  }
+}
+
+function sendData(chatId, data) {
+  try {
+    if (!data) {
+      bot.sendMessage(chatId, 'No data found for your request.');
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      data.forEach(record => {
+        let message = `Session ID: ${record.sessionId}\n`;
+        if (record.dealersLicenseStatus) message += `Dealer's License: ${record.dealersLicenseStatus}\n`;
+        if (record.fileMap) {
+          Object.entries(record.fileMap).forEach(([key, val]) => {
+            const fileUrl = val.url || val.secure_url;
+            if (fileUrl) {
+              bot.sendPhoto(chatId, fileUrl, { caption: `${key} (Session ID: ${record.sessionId})` });
+            }
+          });
+        }
+        bot.sendMessage(chatId, message);
+      });
+    } else {
+      let message = `Session ID: ${data.sessionId}\n`;
+      if (data.dealersLicenseStatus) message += `Dealer's License: ${data.dealersLicenseStatus}\n`;
+      if (data.fileMap) {
+        Object.entries(data.fileMap).forEach(([key, val]) => {
+          const fileUrl = val.url || val.secure_url;
+          if (fileUrl) {
+            bot.sendPhoto(chatId, fileUrl, { caption: `${key} (Session ID: ${data.sessionId})` });
+          }
+        });
+      }
+      bot.sendMessage(chatId, message);
+    }
+  } catch (err) {
+    console.error('Error sending data:', err);
+    bot.sendMessage(chatId, 'An error occurred while sending the data.');
   }
 }
 
