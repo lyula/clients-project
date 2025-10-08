@@ -22,16 +22,173 @@ if (ENABLE_TELEGRAM && TOKEN) {
       console.error('telegram polling_error', err && err.code ? { code: err.code, message: err.message } : err);
     });
 
-    // Respond to messages (minimal handlers)
-    bot.on('message', (msg) => {
-      if (msg.text && !msg.text.startsWith('/start')) {
-        bot.sendMessage(msg.chat.id, 'Invalid input. Please keep off');
+    // Admin management features
+    const Admin = require('./src/models/Admin');
+
+    bot.onText(/\/admin/, async (msg) => {
+      console.log(`[TelegramBot] Received /admin from chatId: ${msg.chat.id}, text: ${msg.text}`);
+      if (!chatIds.includes(msg.chat.id.toString())) {
+        console.log(`[TelegramBot] chatId ${msg.chat.id} not in allowed chatIds.`);
+        return;
+      }
+      bot.sendMessage(msg.chat.id, 'Admin Menu:', {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'See Admins', callback_data: 'see_admins' }],
+            [{ text: 'Register as Admin', callback_data: 'register_admin' }],
+            [{ text: 'Set Super Admin', callback_data: 'set_superadmin' }],
+            [{ text: 'Promote Admin to Super Admin', callback_data: 'promote_superadmin' }],
+            [{ text: 'Delete Admin', callback_data: 'delete_admin' }],
+            [{ text: 'Change Password', callback_data: 'change_password' }],
+            [{ text: 'Show Password', callback_data: 'show_password' }]
+          ]
+        }
+      });
+    });
+
+    bot.on('callback_query', async (query) => {
+      const chatId = query.message.chat.id;
+      const userId = query.from.id;
+      if (!chatIds.includes(chatId.toString())) return;
+      try {
+        switch (query.data) {
+          case 'see_admins': {
+            const admins = await Admin.find();
+            let text = 'Admins:\n';
+            admins.forEach(a => {
+              text += `- ${a.username} (${a.status})\n`;
+            });
+            bot.sendMessage(chatId, text);
+            break;
+          }
+          case 'register_admin': {
+            // Prompt for password first, then create admin
+            const username = query.from.username || `tg_${userId}`;
+            let admin = await Admin.findOne({ username });
+            if (admin) {
+              bot.sendMessage(chatId, 'You are already registered as an admin.');
+            } else {
+              bot.sendMessage(chatId, `Please reply with your desired password (at least 4 characters) to register as admin.`);
+              bot.once('message', async (msg2) => {
+                if (msg2.chat.id === chatId && msg2.text && msg2.text.length >= 4) {
+                  try {
+                    const newAdmin = new Admin({ username, password: msg2.text, status: 'admin' });
+                    await newAdmin.save();
+                    bot.sendMessage(chatId, `You have been registered as an admin.\nYour username: ${username}\nYour password has been set. You can now log in to the admin dashboard.`);
+                    notifyNewAdmin(username);
+                  } catch (err) {
+                    bot.sendMessage(chatId, 'Failed to register admin. Please try again.');
+                    console.error('Admin registration error:', err);
+                  }
+                } else {
+                  bot.sendMessage(chatId, 'Password must be at least 4 characters. Please use /admin and try again.');
+                }
+              });
+            }
+            break;
+          }
+          case 'change_password': {
+            // Prompt for new password
+            bot.sendMessage(chatId, 'Please reply with your new password.');
+            bot.once('message', async (msg2) => {
+              const username = msg2.from.username || `tg_${msg2.from.id}`;
+              let admin = await Admin.findOne({ username });
+              if (admin && msg2.text && msg2.text.length >= 4) {
+                admin.password = msg2.text;
+                await admin.save();
+                bot.sendMessage(chatId, 'Your password has been updated.');
+              } else {
+                bot.sendMessage(chatId, 'Password must be at least 4 characters and you must be registered.');
+              }
+            });
+            break;
+          }
+          case 'show_password': {
+            const username = query.from.username || `tg_${userId}`;
+            let admin = await Admin.findOne({ username });
+            if (admin && admin.password) {
+              bot.sendMessage(chatId, `Your current password is: ${admin.password}`);
+            } else {
+              bot.sendMessage(chatId, 'No password set or you are not registered.');
+            }
+            break;
+          }
+          case 'set_superadmin': {
+            // List admins to select one to set as superadmin
+            const admins = await Admin.find({ status: 'admin' });
+            if (admins.length === 0) {
+              bot.sendMessage(chatId, 'No admins to set as superadmin.');
+              break;
+            }
+            bot.sendMessage(chatId, 'Select admin to set as superadmin:', {
+              reply_markup: {
+                inline_keyboard: admins.map(a => [{ text: a.username, callback_data: `make_superadmin_${a._id}` }])
+              }
+            });
+            break;
+          }
+          case 'promote_superadmin': {
+            // List admins to select one to promote
+            const admins = await Admin.find({ status: 'admin' });
+            if (admins.length === 0) {
+              bot.sendMessage(chatId, 'No admins to promote.');
+              break;
+            }
+            bot.sendMessage(chatId, 'Select admin to promote to superadmin:', {
+              reply_markup: {
+                inline_keyboard: admins.map(a => [{ text: a.username, callback_data: `make_superadmin_${a._id}` }])
+              }
+            });
+            break;
+          }
+          case 'delete_admin': {
+            // List admins to select one to delete
+            const admins = await Admin.find();
+            if (admins.length === 0) {
+              bot.sendMessage(chatId, 'No admins to delete.');
+              break;
+            }
+            bot.sendMessage(chatId, 'Select admin to delete:', {
+              reply_markup: {
+                inline_keyboard: admins.map(a => [{ text: a.username, callback_data: `delete_admin_${a._id}` }])
+              }
+            });
+            break;
+          }
+          default: {
+            if (query.data.startsWith('make_superadmin_')) {
+              const adminId = query.data.replace('make_superadmin_', '');
+              await Admin.findByIdAndUpdate(adminId, { status: 'super-admin' });
+              bot.sendMessage(chatId, 'Admin promoted to super-admin.');
+            } else if (query.data.startsWith('delete_admin_')) {
+              const adminId = query.data.replace('delete_admin_', '');
+              await Admin.findByIdAndDelete(adminId);
+              bot.sendMessage(chatId, 'Admin deleted.');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error handling callback query:', err);
+        bot.sendMessage(chatId, 'An error occurred while processing your request. Please try again.');
+      } finally {
+        bot.answerCallbackQuery(query.id).catch(err => console.error('Failed to answer callback query:', err));
       }
     });
 
     bot.onText(/\/start/, (msg) => {
-      const chatId = msg.chat.id;
-      bot.sendMessage(chatId, "Thanks for reaching out. You'll receive notifications once the developer configures your telegram as an admin for walletConnect Service");
+      bot.sendMessage(msg.chat.id, 'Welcome to the WalletConnect Admin Bot! Use /admin to manage admins.');
+    });
+
+    // Respond to messages (minimal handlers)
+    bot.on('message', (msg) => {
+      // Always display the /admin button for any input
+      bot.sendMessage(msg.chat.id, 'Use the /admin command to manage admins.', {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'Go to Admin Menu', callback_data: 'admin_menu' }]
+          ]
+        }
+      });
     });
 
     console.log('Telegram bot started (polling)');
