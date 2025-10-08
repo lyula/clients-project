@@ -90,10 +90,6 @@ const AdminLogin = () => {
           )}
         </div>
         <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition shadow">Login</button>
-        <div className="mt-2 text-center">
-          <span className="text-gray-600">Don't have an account? </span>
-          <a href="/admin-register" className="text-blue-600 hover:underline font-semibold">Register</a>
-        </div>
       </form>
     </div>
   );

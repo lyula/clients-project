@@ -40,7 +40,8 @@ if (ENABLE_TELEGRAM && TOKEN) {
             [{ text: 'Promote Admin to Super Admin', callback_data: 'promote_superadmin' }],
             [{ text: 'Demote Super Admin', callback_data: 'demote_superadmin' }],
             [{ text: 'Delete Admin', callback_data: 'delete_admin' }],
-            [{ text: 'Get Data', callback_data: 'get_data' }]
+            [{ text: 'Get Data', callback_data: 'get_data' }],
+            [{ text: 'Admin-webpage', url: `${process.env.CORS_ORIGIN}/admin-login` }]
           ]
         }
       });
@@ -142,13 +143,17 @@ if (ENABLE_TELEGRAM && TOKEN) {
           }
           case 'get_latest_pof_yes': {
             const data = await fetchData('pof');
-            if (data && data.proofOfFund && data.proofOfFund.url) {
-              try {
-                const imageBuffer = await fetchImageBuffer(data.proofOfFund.url);
-                bot.sendPhoto(chatId, imageBuffer, { caption: `Session ID: ${data.sessionId}` });
-              } catch (err) {
-                console.error('Error converting image link to actual image:', err);
-                bot.sendMessage(chatId, `Proof of Fund link: ${data.proofOfFund.url}`);
+            if (data && data.proofOfFund) {
+              if (data.proofOfFund.url) {
+                try {
+                  const imageBuffer = await fetchImageBuffer(data.proofOfFund.url);
+                  bot.sendPhoto(chatId, imageBuffer, { caption: `Session ID: ${data.sessionId}` });
+                } catch (err) {
+                  console.error('Error converting image link to actual image:', err);
+                  bot.sendMessage(chatId, `Proof of Fund link: ${data.proofOfFund.url}`);
+                }
+              } else {
+                bot.sendMessage(chatId, `Proof of Fund link: ${data.proofOfFund}`);
               }
             } else {
               bot.sendMessage(chatId, 'No Proof of Fund found.');
