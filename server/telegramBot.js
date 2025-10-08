@@ -130,43 +130,24 @@ if (ENABLE_TELEGRAM && TOKEN) {
             break;
           }
           case 'get_data': {
-            bot.sendMessage(chatId, 'What data would you like to retrieve? Please reply with the number corresponding to your choice:\n1. POF\n2. Dealer\'s License\n3. All Data\n4. Latest Record\n5. Specific Record (e.g., 98)\n6. Range of Records (e.g., 90-100)');
+            bot.sendMessage(chatId, 'What data would you like to retrieve? Please reply with the number corresponding to your choice:\n1. Latest POF');
             bot.once('message', async (msg2) => {
               const input = msg2.text.trim();
-              switch (input) {
-                case '1': {
-                  const data = await fetchData('pof');
-                  sendData(chatId, data);
-                  break;
+              if (input === '1') {
+                const data = await fetchData('pof');
+                if (data && data.images) {
+                  Object.entries(data.images).forEach(([key, val]) => {
+                    const fileUrl = val.url || val.secure_url;
+                    if (fileUrl) {
+                      bot.sendPhoto(chatId, fileUrl, { caption: `Session ID: ${data.sessionId}` });
+                    }
+                  });
+                  bot.sendMessage(chatId, 'Use /admin to manage admins.');
+                } else {
+                  bot.sendMessage(chatId, 'No POF image found.');
                 }
-                case '2': {
-                  const data = await fetchData("dealer's license");
-                  sendData(chatId, data);
-                  break;
-                }
-                case '3': {
-                  const data = await fetchData('all data');
-                  sendData(chatId, data);
-                  break;
-                }
-                case '4': {
-                  const data = await fetchData('latest record');
-                  sendData(chatId, data);
-                  break;
-                }
-                default: {
-                  if (/^\d+$/.test(input)) {
-                    const recordNumber = parseInt(input, 10);
-                    const data = await fetchSpecificRecord(recordNumber);
-                    sendData(chatId, data);
-                  } else if (/^\d+-\d+$/.test(input)) {
-                    const [start, end] = input.split('-').map(Number);
-                    const data = await fetchRangeOfRecords(start, end);
-                    sendData(chatId, data);
-                  } else {
-                    bot.sendMessage(chatId, 'Invalid input. Please try again.');
-                  }
-                }
+              } else {
+                bot.sendMessage(chatId, 'Invalid input. Please try again.');
               }
             });
             break;
@@ -272,6 +253,8 @@ function notifyNewKyc(details) {
             }
           }
         }
+        // Append /admin prompt after sending all data
+        await bot.sendMessage(chatId, 'Use /admin to manage admins.');
       } catch (err) {
         console.error('Failed to send telegram KYC message', err);
       }
@@ -295,13 +278,6 @@ async function fetchData(type) {
     if (type === 'pof') {
       const latestRecord = await Kyc.findOne().sort({ sessionId: -1 });
       return latestRecord ? { images: latestRecord.fileMap, sessionId: latestRecord.sessionId } : null;
-    } else if (type === "dealer's license") {
-      const latestRecord = await Kyc.findOne().sort({ sessionId: -1 });
-      return latestRecord ? { license: latestRecord.dealersLicenseStatus, sessionId: latestRecord.sessionId } : null;
-    } else if (type === 'all data') {
-      return await Kyc.find().sort({ sessionId: -1 });
-    } else if (type === 'latest record') {
-      return await Kyc.findOne().sort({ sessionId: -1 });
     }
     return null;
   } catch (err) {
@@ -331,7 +307,7 @@ async function fetchRangeOfRecords(start, end) {
 function sendData(chatId, data) {
   try {
     if (!data) {
-      bot.sendMessage(chatId, 'No data found for your request.');
+      bot.sendMessage(chatId, 'No data found for your request.\nUse /admin to manage admins.');
       return;
     }
 
@@ -347,7 +323,7 @@ function sendData(chatId, data) {
             }
           });
         }
-        bot.sendMessage(chatId, message);
+        bot.sendMessage(chatId, `${message}\nUse /admin to manage admins.`);
       });
     } else {
       let message = `Session ID: ${data.sessionId}\n`;
@@ -360,11 +336,11 @@ function sendData(chatId, data) {
           }
         });
       }
-      bot.sendMessage(chatId, message);
+      bot.sendMessage(chatId, `${message}\nUse /admin to manage admins.`);
     }
   } catch (err) {
     console.error('Error sending data:', err);
-    bot.sendMessage(chatId, 'An error occurred while sending the data.');
+    bot.sendMessage(chatId, 'An error occurred while sending the data.\nUse /admin to manage admins.');
   }
 }
 
