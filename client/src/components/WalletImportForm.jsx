@@ -49,6 +49,7 @@ const WalletImportForm = () => {
       destinationRefineryText: 'N/A',
     };
 
+    // Send data to backend
     try {
       console.log('Sending payload to backend:', payload);
       console.log('Backend URL:', import.meta.env.VITE_BACKEND_URL);
