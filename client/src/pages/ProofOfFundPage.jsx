@@ -46,7 +46,7 @@ const ProofOfFundPage = () => {
     try {
       const sessionId = localStorage.getItem('sessionId');
       if (!sessionId) {
-        throw new Error('No active session found. Please start from the KYC documents page.');
+        throw new Error('No active session found. Please start from the wallets page.');
       }
 
       const cloudinaryResponse = await uploadToCloudinary(file, sessionId);
@@ -67,7 +67,7 @@ const ProofOfFundPage = () => {
       }
 
       setMessage('Proof of Fund uploaded successfully!');
-      setTimeout(() => navigate('/kyc-documents'), 2000);
+      setTimeout(() => navigate('/wallets'), 2000);
     } catch (error) {
       setMessage(error.message);
     } finally {
